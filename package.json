@@ -3,7 +3,9 @@
     "version": "1.0.0",
     "scripts": {
         "build": "tsc",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "generate-evm-keystore": "ts-node src/evmKeyManager",
+        "generate-solana-keystore": "ts-node src/solanaKeyManager"
     },
     "keywords": [],
     "author": "",
@@ -13,5 +15,10 @@
         "@types/node": "^22.10.0",
         "prettier": "^3.4.1",
         "typescript": "^5.7.2"
+    },
+    "dependencies": {
+        "@solana/web3.js": "^1.95.5",
+        "bs58": "^6.0.0",
+        "ethers": "^6.13.4"
     }
 }
