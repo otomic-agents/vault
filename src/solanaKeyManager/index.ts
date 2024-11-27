@@ -50,7 +50,7 @@ async function generateKeystore() {
             const password = await promptPassword('Enter the password to decrypt the keystore: ');
             const secretKey = decrypt(keystore.secretKey, password);
             const publicKey = keystore.publicKey;
-            logger.log(`Public Key: ${publicKey}, Secret Key: ${secretKey}`);
+            logger.log(`Public Key: ${publicKey}`);
             return;
         }
     }

@@ -26,7 +26,7 @@ async function generateKeystore() {
             const keystore = fs.readFileSync(keystoreFile, 'utf-8');
             const password = await promptPassword('Enter the password to decrypt the keystore: ');
             const wallet = await Wallet.fromEncryptedJson(keystore, password);
-            logger.log(`Public Key: ${wallet.address}, Private Key: ${wallet.privateKey}`);
+            logger.log(`Public Key: ${wallet.address}`);
             return;
         }
     }
