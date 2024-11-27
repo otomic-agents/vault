@@ -1,7 +1,6 @@
 {
     "name": "vault",
     "version": "1.0.0",
-    "main": "index.js",
     "scripts": {
         "build": "tsc",
         "format": "prettier --write ."
@@ -11,6 +10,7 @@
     "license": "ISC",
     "description": "",
     "devDependencies": {
+        "@types/node": "^22.10.0",
         "prettier": "^3.4.1",
         "typescript": "^5.7.2"
     }
