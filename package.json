@@ -1,15 +1,17 @@
 {
-  "name": "vault",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "typescript": "^5.7.2"
-  }
+    "name": "vault",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc",
+        "format": "prettier --write ."
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "prettier": "^3.4.1",
+        "typescript": "^5.7.2"
+    }
 }
