@@ -4,7 +4,9 @@
     "scripts": {
         "build": "tsc",
         "format": "prettier --write .",
+        "start-evm-server": "ts-node src/evmVault",
         "generate-evm-keystore": "ts-node src/evmKeyManager",
+        "start-solana-server": "ts-node src/solanaVault",
         "generate-solana-keystore": "ts-node src/solanaKeyManager"
     },
     "keywords": [],
