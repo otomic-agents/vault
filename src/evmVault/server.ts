@@ -165,7 +165,7 @@ export default class Server {
     public async start(): Promise<void> {
         await this.loadPrivateKey();
         this.server.listen(this.port, this.hostname, () => {
-            logger.log(`Server running at http://${this.hostname}:${this.port}/`);
+            logger.log(`Server running at http://${this.hostname}:${this.port}`);
             // reset wallet after server is started, then load it again when sign request comes
             this.wallet = undefined;
         });

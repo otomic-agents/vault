@@ -27,6 +27,7 @@ export default class Server {
         }
 
         const keystore = JSON.parse(fs.readFileSync(keystoreFile, 'utf-8'));
+        logger.log(`Loaded keystore from ${keystoreFile}`);
         const secretKey = decrypt(keystore.secretKey, config.vaultPassword);
         this.keypair = Keypair.fromSecretKey(bs58.decode(secretKey));
         logger.log(`Loaded keypair with public key: ${this.keypair.publicKey.toBase58()}`);
@@ -153,7 +154,7 @@ export default class Server {
     public async start(): Promise<void> {
         await this.loadPrivateKey();
         this.server.listen(this.port, this.hostname, () => {
-            logger.log(`Server running at http://${this.hostname}:${this.port}/`);
+            logger.log(`Server running at http://${this.hostname}:${this.port}`);
             // reset wallet after server is started, then load it again when sign request comes
             this.keypair = undefined;
         });
