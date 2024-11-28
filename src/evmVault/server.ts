@@ -1,7 +1,7 @@
 import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
-import { HDNodeWallet, Wallet, TransactionRequest, TypedDataDomain, TypedDataField } from 'ethers';
+import { HDNodeWallet, Wallet, TypedDataDomain, TypedDataField, Transaction } from 'ethers';
 import logger from '../logger';
 import { config } from '../config';
 
@@ -10,7 +10,7 @@ const keystoreFile = path.join(config.keystorePath, 'evm.json');
 interface EIP712Data {
     domain: TypedDataDomain;
     types: Record<string, TypedDataField[]>;
-    message: Record<string, any>;
+    signData: Record<string, any>;
 }
 export default class Server {
     private hostname: string = '127.0.0.1';
@@ -28,33 +28,46 @@ export default class Server {
         logger.log(`Loaded keystore from ${keystoreFile}`);
         const wallet = await Wallet.fromEncryptedJson(keystore, config.evmWalletPassword);
         this.wallet = wallet;
-        if (!this.wallet) {
-            throw new Error('Failed to load wallet');
-        }
         logger.log(`Loaded wallet with address: ${this.wallet.address}`);
     }
 
-    private async signTransaction(unsignedTx: TransactionRequest): Promise<string> {
+    private async signTransaction(serializedTx: string): Promise<string> {
+        await this.loadPrivateKey();
         if (!this.wallet) {
             throw new Error('Wallet is not loaded');
         }
+
+        let tx = Transaction.from(serializedTx);
+
+        const unsignedTx = {
+            to: tx.to,
+            data: tx.data,
+            value: tx.value,
+            gasPrice: tx.gasPrice,
+            gasLimit: tx.gasLimit,
+            chainId: tx.chainId,
+            nonce: tx.nonce,
+        };
 
         //TODO: Implement the security check
 
         const signedTx = await this.wallet.signTransaction(unsignedTx);
         logger.log(`Signed transaction: ${signedTx}`);
+        this.wallet = undefined;
         return signedTx;
     }
 
     private async signEIP712(data: EIP712Data): Promise<string> {
+        await this.loadPrivateKey();
         if (!this.wallet) {
             throw new Error('Wallet is not loaded');
         }
 
         //TODO: Implement the security check
 
-        const signedData = await this.wallet.signTypedData(data.domain, data.types, data.message);
+        const signedData = await this.wallet.signTypedData(data.domain, data.types, data.signData);
         logger.log(`Signed EIP-712 data: ${signedData}`);
+        this.wallet = undefined;
         return signedData;
     }
 
@@ -68,16 +81,30 @@ export default class Server {
             });
             req.on('end', async () => {
                 try {
-                    const unsignedTx = JSON.parse(body);
-                    const signedTx = await this.signTransaction(unsignedTx);
+                    const data = JSON.parse(body);
+                    if (!data || !data.txData) {
+                        throw new Error('Invalid tx data');
+                    }
+                    const signedTx = await this.signTransaction(data.txData);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify({ signedTx }));
+                    res.end(
+                        JSON.stringify({
+                            message: 'Message tx signed successfully',
+                            signedTx: signedTx,
+                        }),
+                    );
                 } catch (error) {
-                    logger.error(`Error signing transaction: ${JSON.stringify(error, null, 2)}`);
-                    res.statusCode = 500;
-                    res.setHeader('Content-Type', 'text/plain');
-                    res.end('Internal Server Error');
+                    if ((error as Error).message === 'Invalid tx data') {
+                        res.statusCode = 400;
+                        res.setHeader('Content-Type', 'text/plain');
+                        res.end('Bad Request');
+                    } else {
+                        logger.error(`Error signing EIP-712 data: ${JSON.stringify(error, null, 2)}`);
+                        res.statusCode = 500;
+                        res.setHeader('Content-Type', 'text/plain');
+                        res.end('Internal Server Error');
+                    }
                 }
             });
         } else if (req.url === '/signEIP712' && req.method === 'POST') {
@@ -88,15 +115,29 @@ export default class Server {
             req.on('end', async () => {
                 try {
                     const data = JSON.parse(body);
+                    if (!data || !data.domain || !data.types || !data.signData) {
+                        throw new Error('Invalid EIP-712 data');
+                    }
                     const signedData = await this.signEIP712(data);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify({ signedData }));
+                    res.end(
+                        JSON.stringify({
+                            message: 'Message signed successfully',
+                            signature: signedData,
+                        }),
+                    );
                 } catch (error) {
-                    logger.error(`Error signing EIP-712 data: ${JSON.stringify(error, null, 2)}`);
-                    res.statusCode = 500;
-                    res.setHeader('Content-Type', 'text/plain');
-                    res.end('Internal Server Error');
+                    if ((error as Error).message === 'Invalid EIP-712 data') {
+                        res.statusCode = 400;
+                        res.setHeader('Content-Type', 'text/plain');
+                        res.end('Bad Request');
+                    } else {
+                        logger.error(`Error signing EIP-712 data: ${JSON.stringify(error, null, 2)}`);
+                        res.statusCode = 500;
+                        res.setHeader('Content-Type', 'text/plain');
+                        res.end('Internal Server Error');
+                    }
                 }
             });
         } else {
@@ -111,6 +152,8 @@ export default class Server {
         await this.loadPrivateKey();
         this.server.listen(this.port, this.hostname, () => {
             logger.log(`Server running at http://${this.hostname}:${this.port}/`);
+            // reset wallet after server is started, then load it again when sign request comes
+            this.wallet = undefined;
         });
     }
 }
