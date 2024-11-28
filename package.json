@@ -4,9 +4,9 @@
     "scripts": {
         "build": "tsc",
         "format": "prettier --write .",
-        "start-evm-server": "ts-node src/evmVault",
+        "run-evm-server": "ts-node src/evmVault",
         "manage-evm-keystore": "ts-node src/keyStoreManager/evm.ts",
-        "start-solana-server": "ts-node src/solanaVault",
+        "run-solana-server": "ts-node src/solanaVault",
         "manage-solana-keystore": "ts-node src/keyStoreManager/solana.ts"
     },
     "keywords": [],
@@ -21,6 +21,7 @@
     "dependencies": {
         "@solana/web3.js": "^1.95.5",
         "bs58": "^6.0.0",
-        "ethers": "^6.13.4"
+        "ethers": "^6.13.4",
+        "tweetnacl": "^1.0.3"
     }
 }

@@ -24,6 +24,10 @@ export default class Server {
     }
 
     private async loadPrivateKey() {
+        if (!fs.existsSync(keystoreFile)) {
+            throw new Error('Keystore file does not exist.');
+        }
+
         const keystore = fs.readFileSync(keystoreFile, 'utf-8');
         logger.log(`Loaded keystore from ${keystoreFile}`);
         const wallet = await Wallet.fromEncryptedJson(keystore, config.vaultPassword);
