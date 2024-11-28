@@ -1,75 +1,71 @@
-import { Keypair } from '@solana/web3.js';
+import { HDNodeWallet, Wallet } from 'ethers';
 import * as fs from 'fs';
 import * as path from 'path';
-import bs58 from 'bs58';
 import logger from '../logger';
-import { config } from '../config';
-import { promptText, encrypt, decrypt } from '../utils';
-
-const keystoreFile = path.join(config.keystorePath, 'solana.json');
+import { config } from './config';
+import { promptText } from '../utils';
 
 async function generateKeystore() {
+    const keystoreFileName = await promptText('Enter the keystore file name: ');
+    const keystoreFile = path.join(config.keystoreFolder, keystoreFileName);
+
     if (fs.existsSync(keystoreFile)) {
         const replace = await promptText('Keystore already exists. Do you want to replace it? (yes/no): ');
-        if (replace.toLowerCase() !== 'yes') {
-            const keystore = JSON.parse(fs.readFileSync(keystoreFile, 'utf-8'));
-            const publicKey = keystore.publicKey;
-            logger.log(`Public Key: ${publicKey}`);
-            return;
-        }
+        if (replace.toLowerCase() !== 'yes') return;
     }
 
     const password = await promptText('Enter a password to encrypt the keystore: ', true);
-    const keypair = Keypair.generate();
-    const keystore = {
-        publicKey: keypair.publicKey.toBase58(),
-        secretKey: encrypt(bs58.encode(Buffer.from(keypair.secretKey)), password),
-    };
+    const wallet = Wallet.createRandom();
+    const keystore = await wallet.encrypt(password);
 
-    fs.writeFileSync(keystoreFile, JSON.stringify(keystore, null, 2));
-    logger.log(`Public Key: ${keystore.publicKey}`);
-    logger.log('Keystore saved to keystore/solana.json');
+    fs.writeFileSync(keystoreFile, keystore);
+    logger.log(`Public Key: ${wallet.address}`);
+    logger.log(`Keystore saved to ${keystoreFile}`);
 }
 
 async function modifyKeystorePassword() {
+    const keystoreFileName = await promptText('Enter the keystore file name: ');
+    const keystoreFile = path.join(config.keystoreFolder, keystoreFileName);
+
     if (!fs.existsSync(keystoreFile)) {
         logger.error('Keystore file does not exist.');
         return;
     }
 
     const oldPassword = await promptText('Enter the current password: ', true);
-    const keystore = JSON.parse(fs.readFileSync(keystoreFile, 'utf-8'));
-    let secretKey: string;
+    const keystore = fs.readFileSync(keystoreFile, 'utf-8');
+    let wallet: Wallet | HDNodeWallet;
     try {
-        secretKey = decrypt(keystore.secretKey, oldPassword);
+        wallet = await Wallet.fromEncryptedJson(keystore, oldPassword);
     } catch (error) {
         logger.error('Invalid current password.');
         return;
     }
 
     const newPassword = await promptText('Enter the new password: ', true);
-    const newKeystore = {
-        publicKey: keystore.publicKey,
-        secretKey: encrypt(secretKey, newPassword),
-    };
+    const newKeystore = await wallet.encrypt(newPassword);
 
-    fs.writeFileSync(keystoreFile, JSON.stringify(newKeystore, null, 2));
+    fs.writeFileSync(keystoreFile, newKeystore);
     logger.log(`Keystore password has been updated and saved to ${keystoreFile}`);
 }
 
 async function showPublicKey() {
+    const keystoreFileName = await promptText('Enter the keystore file name: ');
+    const keystoreFile = path.join(config.keystoreFolder, keystoreFileName);
+
     if (!fs.existsSync(keystoreFile)) {
         logger.error('Keystore file does not exist.');
         return;
     }
 
-    const keystore = JSON.parse(fs.readFileSync(keystoreFile, 'utf-8'));
-    logger.log(`Public Key: ${keystore.publicKey}`);
+    const keystore = fs.readFileSync(keystoreFile, 'utf-8');
+    const wallet = JSON.parse(keystore);
+    logger.log(`Public Key: 0x${wallet.address}`);
 }
 
 async function main() {
-    if (!fs.existsSync(config.keystorePath)) {
-        fs.mkdirSync(config.keystorePath, { recursive: true });
+    if (!fs.existsSync(config.keystoreFolder)) {
+        fs.mkdirSync(config.keystoreFolder, { recursive: true });
     }
 
     const action = await promptText(

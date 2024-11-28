@@ -5,9 +5,9 @@
         "build": "tsc",
         "format": "prettier --write .",
         "start-evm-server": "ts-node src/evmVault",
-        "manage-evm-keystore": "ts-node src/evmKeyManager",
+        "manage-evm-keystore": "ts-node src/keyStoreManager/evm.ts",
         "start-solana-server": "ts-node src/solanaVault",
-        "manage-solana-keystore": "ts-node src/solanaKeyManager"
+        "manage-solana-keystore": "ts-node src/keyStoreManager/solana.ts"
     },
     "keywords": [],
     "author": "",

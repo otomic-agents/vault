@@ -3,9 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { HDNodeWallet, Wallet, TypedDataDomain, TypedDataField, Transaction } from 'ethers';
 import logger from '../logger';
-import { config } from '../config';
+import { config } from './config';
 
-const keystoreFile = path.join(config.keystorePath, 'evm.json');
+const keystoreFile = path.join(config.keystoreFolder, config.vaultName);
 
 interface EIP712Data {
     domain: TypedDataDomain;
@@ -19,19 +19,19 @@ export default class Server {
     private wallet: Wallet | HDNodeWallet | undefined = undefined;
 
     constructor() {
-        this.port = config.evmVaultPort;
+        this.port = config.port;
         this.server = http.createServer(this.requestListener.bind(this));
     }
 
     private async loadPrivateKey() {
         const keystore = fs.readFileSync(keystoreFile, 'utf-8');
         logger.log(`Loaded keystore from ${keystoreFile}`);
-        const wallet = await Wallet.fromEncryptedJson(keystore, config.evmWalletPassword);
+        const wallet = await Wallet.fromEncryptedJson(keystore, config.vaultPassword);
         this.wallet = wallet;
         logger.log(`Loaded wallet with address: ${this.wallet.address}`);
     }
 
-    private async signTransaction(serializedTx: string): Promise<string> {
+    private async signTransaction(serializedTx: string): Promise<{ signedTx: string; publicKey: string }> {
         await this.loadPrivateKey();
         if (!this.wallet) {
             throw new Error('Wallet is not loaded');
@@ -53,11 +53,15 @@ export default class Server {
 
         const signedTx = await this.wallet.signTransaction(unsignedTx);
         logger.log(`Signed transaction: ${signedTx}`);
+        const ret = {
+            signedTx: signedTx,
+            publicKey: this.wallet.address,
+        };
         this.wallet = undefined;
-        return signedTx;
+        return ret;
     }
 
-    private async signEIP712(data: EIP712Data): Promise<string> {
+    private async signEIP712(data: EIP712Data): Promise<{ signedData: string; publicKey: string }> {
         await this.loadPrivateKey();
         if (!this.wallet) {
             throw new Error('Wallet is not loaded');
@@ -67,8 +71,12 @@ export default class Server {
 
         const signedData = await this.wallet.signTypedData(data.domain, data.types, data.signData);
         logger.log(`Signed EIP-712 data: ${signedData}`);
+        const ret = {
+            signedData: signedData,
+            publicKey: this.wallet.address,
+        };
         this.wallet = undefined;
-        return signedData;
+        return ret;
     }
 
     private requestListener(req: http.IncomingMessage, res: http.ServerResponse): void {
@@ -85,13 +93,14 @@ export default class Server {
                     if (!data || !data.txData) {
                         throw new Error('Invalid tx data');
                     }
-                    const signedTx = await this.signTransaction(data.txData);
+                    const ret = await this.signTransaction(data.txData);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.end(
                         JSON.stringify({
                             message: 'Message tx signed successfully',
-                            signedTx: signedTx,
+                            signedTx: ret.signedTx,
+                            publicKey: ret.publicKey,
                         }),
                     );
                 } catch (error) {
@@ -118,13 +127,14 @@ export default class Server {
                     if (!data || !data.domain || !data.types || !data.signData) {
                         throw new Error('Invalid EIP-712 data');
                     }
-                    const signedData = await this.signEIP712(data);
+                    const ret = await this.signEIP712(data);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.end(
                         JSON.stringify({
                             message: 'Message signed successfully',
-                            signature: signedData,
+                            signature: ret.signedData,
+                            publicKey: ret.publicKey,
                         }),
                     );
                 } catch (error) {
