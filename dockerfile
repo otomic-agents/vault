@@ -14,6 +14,8 @@ RUN yarn
 COPY src ./src
 COPY tsconfig.json ./
 
+RUN yarn global add ts-node
+
 # Build the TypeScript code
 RUN yarn build
 

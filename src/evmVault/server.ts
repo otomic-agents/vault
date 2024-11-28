@@ -13,7 +13,7 @@ interface EIP712Data {
     signData: Record<string, any>;
 }
 export default class Server {
-    private hostname: string = '127.0.0.1';
+    private hostname: string = '0.0.0.0';
     private port: number;
     private server: http.Server;
     private wallet: Wallet | HDNodeWallet | undefined = undefined;
