@@ -1,13 +1,13 @@
 import { HDNodeWallet, Wallet } from 'ethers';
 import * as fs from 'fs';
-import * as path from 'path';
 import logger from '../logger';
-import { config } from './config';
-import { promptText } from '../utils';
+import { promptText, resolveKeystorePath } from '../utils';
 
 async function generateKeystore() {
-    const keystoreFileName = await promptText('Enter the keystore file name: ');
-    const keystoreFile = path.join(config.keystoreFolder, keystoreFileName);
+    const userInputKeystoreFile = await promptText(
+        'Enter the full path for the keystore file (e.g., /path/to/keystore.json): ',
+    );
+    const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
 
     if (fs.existsSync(keystoreFile)) {
         const replace = await promptText('Keystore already exists. Do you want to replace it? (yes/no): ');
@@ -24,8 +24,10 @@ async function generateKeystore() {
 }
 
 async function modifyKeystorePassword() {
-    const keystoreFileName = await promptText('Enter the keystore file name: ');
-    const keystoreFile = path.join(config.keystoreFolder, keystoreFileName);
+    const userInputKeystoreFile = await promptText(
+        'Enter the full path for the keystore file (e.g., /path/to/keystore.json): ',
+    );
+    const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
 
     if (!fs.existsSync(keystoreFile)) {
         logger.error('Keystore file does not exist.');
@@ -50,8 +52,10 @@ async function modifyKeystorePassword() {
 }
 
 async function showPublicKey() {
-    const keystoreFileName = await promptText('Enter the keystore file name: ');
-    const keystoreFile = path.join(config.keystoreFolder, keystoreFileName);
+    const userInputKeystoreFile = await promptText(
+        'Enter the full path for the keystore file (e.g., /path/to/keystore.json): ',
+    );
+    const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
 
     if (!fs.existsSync(keystoreFile)) {
         logger.error('Keystore file does not exist.');
@@ -64,10 +68,6 @@ async function showPublicKey() {
 }
 
 async function main() {
-    if (!fs.existsSync(config.keystoreFolder)) {
-        fs.mkdirSync(config.keystoreFolder, { recursive: true });
-    }
-
     const action = await promptText(
         'Do you want to generate a new keystore, modify the password, or show the public key? (generate/modify/show): ',
     );

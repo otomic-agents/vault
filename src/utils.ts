@@ -1,5 +1,7 @@
 import * as readline from 'readline';
 import * as crypto from 'crypto';
+import * as path from 'path';
+import * as os from 'os';
 
 export async function promptText(promptText: string, hideInput: boolean = false): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -51,6 +53,14 @@ export async function promptText(promptText: string, hideInput: boolean = false)
             });
         }
     });
+}
+
+export function resolveKeystorePath(userInputPath: string): string {
+    const projectRoot = process.cwd();
+    if (userInputPath.startsWith('~')) {
+        userInputPath = path.join(os.homedir(), userInputPath.slice(1));
+    }
+    return path.resolve(projectRoot, userInputPath);
 }
 
 const algorithm = 'aes-256-cbc';
