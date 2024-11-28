@@ -43,11 +43,11 @@ export default class Server {
         const unsignedTx = Transaction.populate(txMessage); // 从消息重建交易
         unsignedTx.sign(this.keypair);
         const signedTxBuffer = unsignedTx.serialize();
-        const signedTxBase64 = signedTxBuffer.toString('hex');
+        const signedTx = signedTxBuffer.toString('hex');
 
-        logger.log(`Signed transaction: ${signedTxBase64}`);
+        logger.log(`Signed transaction: ${signedTx}`);
         const ret = {
-            signature: signedTxBase64,
+            signature: signedTx,
             publicKey: this.keypair.publicKey.toBase58(),
         };
         this.keypair = undefined;
@@ -117,7 +117,7 @@ export default class Server {
                 try {
                     const data = JSON.parse(body);
                     if (!data || !data.message) {
-                        throw new Error('Invalid EIP-712 data');
+                        throw new Error('Invalid message data');
                     }
                     const ret = await this.signMessage(data.message);
                     res.statusCode = 200;
@@ -130,7 +130,7 @@ export default class Server {
                         }),
                     );
                 } catch (error) {
-                    if ((error as Error).message === 'Invalid EIP-712 data') {
+                    if ((error as Error).message === 'Invalid message data') {
                         res.statusCode = 400;
                         res.setHeader('Content-Type', 'text/plain');
                         res.end('Bad Request');
