@@ -97,7 +97,7 @@ export default class Server {
                     res.end(
                         JSON.stringify({
                             message: 'Transaction signed successfully',
-                            signedTx: ret.signature,
+                            signature: ret.signature,
                             publicKey: ret.publicKey,
                         }),
                     );
