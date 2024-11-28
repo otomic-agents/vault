@@ -41,7 +41,10 @@ export default class Server {
 
         const messageBytes = Buffer.from(unsignedTxBase64, 'base64');
         const txMessage = Message.from(messageBytes);
-        const unsignedTx = Transaction.populate(txMessage); // 从消息重建交易
+        const unsignedTx = Transaction.populate(txMessage);
+
+        //TODO: Implement the security check
+
         unsignedTx.sign(this.keypair);
         const signedTxBuffer = unsignedTx.serialize();
         const signedTx = signedTxBuffer.toString('hex');
@@ -60,6 +63,8 @@ export default class Server {
         if (!this.keypair) {
             throw new Error('Keypair is not loaded');
         }
+
+        //TODO: Implement the security check
 
         const messageBytes = new TextEncoder().encode(message);
         const signatureBytes = nacl.sign.detached(messageBytes, this.keypair.secretKey);
