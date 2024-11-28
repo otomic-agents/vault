@@ -74,7 +74,7 @@ export default class Server {
                     res.setHeader('Content-Type', 'application/json');
                     res.end(JSON.stringify({ signedTx }));
                 } catch (error) {
-                    logger.error(`Error signing transaction: ${JSON.stringify(error)}`);
+                    logger.error(`Error signing transaction: ${JSON.stringify(error, null, 2)}`);
                     res.statusCode = 500;
                     res.setHeader('Content-Type', 'text/plain');
                     res.end('Internal Server Error');
@@ -93,7 +93,7 @@ export default class Server {
                     res.setHeader('Content-Type', 'application/json');
                     res.end(JSON.stringify({ signedData }));
                 } catch (error) {
-                    logger.error(`Error signing EIP-712 data: ${JSON.stringify(error)}`);
+                    logger.error(`Error signing EIP-712 data: ${JSON.stringify(error, null, 2)}`);
                     res.statusCode = 500;
                     res.setHeader('Content-Type', 'text/plain');
                     res.end('Internal Server Error');
