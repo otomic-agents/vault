@@ -17,8 +17,5 @@ COPY tsconfig.json ./
 # Build the TypeScript code
 RUN yarn build
 
-# Expose the port that the server will run on
-EXPOSE 3000
-
-# Start the server
-CMD ["yarn", "run-evm-server"]
+# Define the entrypoint to allow passing different commands
+ENTRYPOINT ["yarn"]
