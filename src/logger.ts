@@ -3,7 +3,8 @@ class Logger {
         const now = new Date().toISOString();
         const stack = new Error().stack;
         const callerLine = stack?.split('\n')[3].trim();
-        return `[${now}] [${level}] ${callerLine}: ${message}`;
+        const relativePath = callerLine?.replace(process.cwd(), '.');
+        return `[${now}] [${level}] ${relativePath}: ${message}`;
     }
 
     log(message: string): void {

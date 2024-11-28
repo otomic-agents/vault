@@ -20,8 +20,6 @@ export default class Server {
     private async loadPrivateKey() {
         const keystore = fs.readFileSync(keystoreFile, 'utf-8');
         logger.log(`Loaded keystore from ${keystoreFile}`);
-        logger.log(keystore);
-        logger.log(config.evmWalletPassword);
         const wallet = await Wallet.fromEncryptedJson(keystore, config.evmWalletPassword);
         this.wallet = wallet;
         logger.log(`Loaded wallet with address: ${this.wallet.address}`);
