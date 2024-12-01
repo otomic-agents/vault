@@ -1,26 +1,26 @@
 import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
-import { HDNodeWallet, Wallet, TypedDataDomain, TypedDataField, Transaction } from 'ethers';
+import { HDNodeWallet, Wallet, Transaction } from 'ethers';
 import logger from '../logger';
 import { config } from './config';
 
+import { Whitelist, EIP712Data } from './whitelist';
+import { getNormalizedIp } from '../utils';
+
 const keystoreFile = path.join(config.keystoreFolder, config.vaultName);
 
-interface EIP712Data {
-    domain: TypedDataDomain;
-    types: Record<string, TypedDataField[]>;
-    signData: Record<string, any>;
-}
 export default class Server {
     private hostname: string = '0.0.0.0';
     private port: number;
     private server: http.Server;
     private wallet: Wallet | HDNodeWallet | undefined = undefined;
+    private whitelist: Whitelist;
 
     constructor() {
         this.port = config.port;
         this.server = http.createServer(this.requestListener.bind(this));
+        this.whitelist = new Whitelist();
     }
 
     private async loadPrivateKey() {
@@ -35,13 +35,21 @@ export default class Server {
         logger.log(`Loaded wallet with address: ${this.wallet.address}`);
     }
 
-    private async signTransaction(serializedTx: string): Promise<{ signedTx: string; publicKey: string }> {
+    private async signTransaction(
+        serializedTx: string,
+        normalizedIp: string,
+    ): Promise<{ signedTx: string; publicKey: string }> {
         await this.loadPrivateKey();
         if (!this.wallet) {
             throw new Error('Wallet is not loaded');
         }
 
         let tx = Transaction.from(serializedTx);
+
+        let isValid = this.whitelist.isAllowedTx(normalizedIp, tx);
+        if (!isValid) {
+            throw new Error('Msg is not allowed');
+        }
 
         const unsignedTx = {
             to: tx.to,
@@ -53,8 +61,6 @@ export default class Server {
             nonce: tx.nonce,
         };
 
-        //TODO: Implement the security check
-
         const signedTx = await this.wallet.signTransaction(unsignedTx);
         logger.log(`Signed transaction: ${signedTx}`);
         const ret = {
@@ -65,13 +71,19 @@ export default class Server {
         return ret;
     }
 
-    private async signEIP712(data: EIP712Data): Promise<{ signedData: string; publicKey: string }> {
+    private async signEIP712(
+        data: EIP712Data,
+        normalizedIp: string,
+    ): Promise<{ signedData: string; publicKey: string }> {
         await this.loadPrivateKey();
         if (!this.wallet) {
             throw new Error('Wallet is not loaded');
         }
 
-        //TODO: Implement the security check
+        let isValid = this.whitelist.isAllowedMsg(normalizedIp, data);
+        if (!isValid) {
+            throw new Error('Transaction is not allowed');
+        }
 
         const signedData = await this.wallet.signTypedData(data.domain, data.types, data.signData);
         logger.log(`Signed EIP-712 data: ${signedData}`);
@@ -84,7 +96,16 @@ export default class Server {
     }
 
     private requestListener(req: http.IncomingMessage, res: http.ServerResponse): void {
-        logger.log(`Received request: ${req.method} ${req.url}`);
+        const normalizedIp = getNormalizedIp(req);
+        logger.log(`Received request: ${req.method} ${req.url} from ${normalizedIp}`);
+
+        if (!normalizedIp) {
+            logger.error('Failed to get normalized IP');
+            res.statusCode = 403;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('Forbidden');
+            return;
+        }
 
         if (req.url === '/signTx' && req.method === 'POST') {
             let body = '';
@@ -97,7 +118,7 @@ export default class Server {
                     if (!data || !data.txData) {
                         throw new Error('Invalid tx data');
                     }
-                    const ret = await this.signTransaction(data.txData);
+                    const ret = await this.signTransaction(data.txData, normalizedIp);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.end(
@@ -112,6 +133,10 @@ export default class Server {
                         res.statusCode = 400;
                         res.setHeader('Content-Type', 'text/plain');
                         res.end('Bad Request');
+                    } else if ((error as Error).message === 'Transaction is not allowed') {
+                        res.statusCode = 403;
+                        res.setHeader('Content-Type', 'text/plain');
+                        res.end('Forbidden');
                     } else {
                         logger.error(`Error signing EIP-712 data: ${JSON.stringify(error, null, 2)}`);
                         res.statusCode = 500;
@@ -131,7 +156,7 @@ export default class Server {
                     if (!data || !data.domain || !data.types || !data.signData) {
                         throw new Error('Invalid EIP-712 data');
                     }
-                    const ret = await this.signEIP712(data);
+                    const ret = await this.signEIP712(data, normalizedIp);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.end(
@@ -146,6 +171,10 @@ export default class Server {
                         res.statusCode = 400;
                         res.setHeader('Content-Type', 'text/plain');
                         res.end('Bad Request');
+                    } else if ((error as Error).message === 'Msg is not allowed') {
+                        res.statusCode = 403;
+                        res.setHeader('Content-Type', 'text/plain');
+                        res.end('Forbidden');
                     } else {
                         logger.error(`Error signing EIP-712 data: ${JSON.stringify(error, null, 2)}`);
                         res.statusCode = 500;

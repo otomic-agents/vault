@@ -2,6 +2,8 @@ import * as readline from 'readline';
 import * as crypto from 'crypto';
 import * as path from 'path';
 import * as os from 'os';
+import * as http from 'http';
+import ip from 'ip';
 
 export async function promptText(promptText: string, hideInput: boolean = false): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -82,4 +84,10 @@ export function decrypt(text: string, password: string): string {
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
+}
+
+export function getNormalizedIp(req: http.IncomingMessage): string | undefined {
+    const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() || req.socket.remoteAddress;
+    if (!clientIp) return undefined;
+    return ip.isV6Format(clientIp) ? ip.toString(ip.toBuffer(clientIp).slice(-4)) : clientIp;
 }
