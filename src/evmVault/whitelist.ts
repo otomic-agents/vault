@@ -31,10 +31,12 @@ export class Whitelist {
             const [ip, toAddress, method] = rule.split('-');
             return { ip, toAddress, method };
         });
+        logger.info(`txRules: ${JSON.stringify(this.txRules, null, 2)}`);
         this.msgRules = config.signMsgWhitelists.map((rule) => {
             const [ip, domain, primaryType] = rule.split('-');
             return { ip, domain, primaryType };
         });
+        logger.info(`msgRules: ${JSON.stringify(this.msgRules, null, 2)}`);
         this.iface = new Interface(abi);
     }
 

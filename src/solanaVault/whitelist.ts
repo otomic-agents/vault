@@ -25,10 +25,12 @@ export class Whitelist {
             const [ip, toAddress, method] = rule.split('-');
             return { ip, toAddress, method };
         });
+        logger.info(`txRules: ${JSON.stringify(this.txRules, null, 2)}`);
         this.msgRules = config.signMsgWhitelists.map((rule) => {
             const [ip, substring] = rule.split('-');
             return { ip, substring };
         });
+        logger.info(`msgRules: ${JSON.stringify(this.msgRules, null, 2)}`);
         this.coder = new BorshInstructionCoder(idl as Idl);
     }
 

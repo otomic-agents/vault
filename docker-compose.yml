@@ -1,0 +1,79 @@
+version: '3.9'
+
+services:
+    nginx:
+        image: nginx:latest
+        container_name: nginx
+        ports:
+            - '19000:19000'
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        depends_on:
+            - lp_9006_sign
+            - lp_501_sign
+            - relay_9006_sign
+            - relay_501_sign
+
+    lp_9006_sign:
+        image: otmoic/vault:latest
+        container_name: lp_9006_sign
+        expose:
+            - '9100'
+        volumes:
+            - ./keystore/lp_9006_keystore/:/app/keystore
+        environment:
+            KEYSTORE_FOLDER: '/app/keystore'
+            VAULT_NAME: 'keystore'
+            VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
+            PORT: '9100'
+            SIGN_TX_WHITELISTS: '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*,192.168.0.1-0x55d398326f99059fF775485246999027B3197955-*'
+            SIGN_MSG_WHITELISTS: '192.168.0.1-OtmoicSwap-Message,192.168.0.1-Otmoic Reputation-Complaint'
+        entrypoint: ['npm', 'run', 'run-evm-server']
+
+    lp_501_sign:
+        image: otmoic/vault:latest
+        container_name: lp_501_sign
+        expose:
+            - '9100'
+        volumes:
+            - ./keystore/lp_501_keystore/:/app/keystore
+        environment:
+            KEYSTORE_FOLDER: '/app/keystore'
+            VAULT_NAME: 'keystore'
+            VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
+            PORT: '9100'
+            SIGN_TX_WHITELISTS: '192.168.0.1-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,192.168.0.1-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*'
+            SIGN_MSG_WHITELISTS: '192.168.0.1-*,*-src_chain_id'
+        entrypoint: ['npm', 'run', 'run-solana-server']
+
+    relay_9006_sign:
+        image: otmoic/vault:latest
+        container_name: relay_9006_sign
+        expose:
+            - '9100'
+        volumes:
+            - ./keystore/relay_9006_keystore/:/app/keystore
+        environment:
+            KEYSTORE_FOLDER: '/app/keystore'
+            VAULT_NAME: 'keystore'
+            VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
+            PORT: '9100'
+            SIGN_TX_WHITELISTS: '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*,192.168.0.1-0x55d398326f99059fF775485246999027B3197955-*'
+            SIGN_MSG_WHITELISTS: '192.168.0.1-OtmoicSwap-Message,192.168.0.1-Otmoic Reputation-Complaint'
+        entrypoint: ['npm', 'run', 'run-evm-server']
+
+    relay_501_sign:
+        image: otmoic/vault:latest
+        container_name: relay_501_sign
+        expose:
+            - '9100'
+        volumes:
+            - ./keystore/relay_501_keystore/:/app/keystore
+        environment:
+            KEYSTORE_FOLDER: '/app/keystore'
+            VAULT_NAME: 'keystore'
+            VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
+            PORT: '9100'
+            SIGN_TX_WHITELISTS: '192.168.0.1-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,192.168.0.1-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*'
+            SIGN_MSG_WHITELISTS: '192.168.0.1-*,*-src_chain_id'
+        entrypoint: ['npm', 'run', 'run-solana-server']
