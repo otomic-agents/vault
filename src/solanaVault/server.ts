@@ -28,7 +28,7 @@ export default class Server {
 
     private async loadPrivateKey() {
         if (!fs.existsSync(keystoreFile)) {
-            throw new Error('Keystore file does not exist.');
+            throw new Error(`Keystore file does not exist.${keystoreFile}`);
         }
 
         const keystore = JSON.parse(fs.readFileSync(keystoreFile, 'utf-8'));

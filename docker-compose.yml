@@ -26,9 +26,9 @@ services:
             VAULT_NAME: 'keystore'
             VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
             PORT: '9100'
-            SIGN_TX_WHITELISTS: '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*,192.168.0.1-0x55d398326f99059fF775485246999027B3197955-*'
-            SIGN_MSG_WHITELISTS: '192.168.0.1-OtmoicSwap-Message,192.168.0.1-Otmoic Reputation-Complaint'
-        entrypoint: ['npm', 'run', 'run-evm-server']
+            SIGN_TX_WHITELISTS: '172.31.44.214-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*,172.31.44.214-0x55d398326f99059fF775485246999027B3197955-*'
+            SIGN_MSG_WHITELISTS: '172.31.44.214-OtmoicSwap-Message,172.31.44.214-Otmoic Reputation-Complaint'
+        entrypoint: ['yarn', 'run', 'run-evm-server']
 
     lp_501_sign:
         image: otmoic/vault:latest
@@ -42,9 +42,9 @@ services:
             VAULT_NAME: 'keystore'
             VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
             PORT: '9100'
-            SIGN_TX_WHITELISTS: '192.168.0.1-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,192.168.0.1-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*'
-            SIGN_MSG_WHITELISTS: '192.168.0.1-*,*-src_chain_id'
-        entrypoint: ['npm', 'run', 'run-solana-server']
+            SIGN_TX_WHITELISTS: '172.31.44.214-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,172.31.44.214-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*'
+            SIGN_MSG_WHITELISTS: '172.31.44.214-*,*-src_chain_id'
+        entrypoint: ['yarn', 'run', 'run-solana-server']
 
     relay_9006_sign:
         image: otmoic/vault:latest
@@ -58,9 +58,9 @@ services:
             VAULT_NAME: 'keystore'
             VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
             PORT: '9100'
-            SIGN_TX_WHITELISTS: '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*,192.168.0.1-0x55d398326f99059fF775485246999027B3197955-*'
-            SIGN_MSG_WHITELISTS: '192.168.0.1-OtmoicSwap-Message,192.168.0.1-Otmoic Reputation-Complaint'
-        entrypoint: ['npm', 'run', 'run-evm-server']
+            SIGN_TX_WHITELISTS: '172.31.44.214-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*,172.31.44.214-0x55d398326f99059fF775485246999027B3197955-*'
+            SIGN_MSG_WHITELISTS: '172.31.44.214-OtmoicSwap-Message,172.31.44.214-Otmoic Reputation-Complaint'
+        entrypoint: ['yarn', 'run', 'run-evm-server']
 
     relay_501_sign:
         image: otmoic/vault:latest
@@ -74,6 +74,6 @@ services:
             VAULT_NAME: 'keystore'
             VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
             PORT: '9100'
-            SIGN_TX_WHITELISTS: '192.168.0.1-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,192.168.0.1-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*'
-            SIGN_MSG_WHITELISTS: '192.168.0.1-*,*-src_chain_id'
-        entrypoint: ['npm', 'run', 'run-solana-server']
+            SIGN_TX_WHITELISTS: '172.31.44.214-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,172.31.44.214-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*'
+            SIGN_MSG_WHITELISTS: '172.31.44.214-*,*-src_chain_id'
+        entrypoint: ['yarn', 'run', 'run-solana-server']
