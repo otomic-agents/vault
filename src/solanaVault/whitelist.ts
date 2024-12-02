@@ -35,6 +35,7 @@ export class Whitelist {
     }
 
     public isAllowedTx(ip: string, tx: Transaction): boolean {
+        console.log("allowed Tx", tx);
         for (const ix of tx.instructions) {
             const message = this.coder.decode(ix.data, 'base58');
             if (message === null) {
