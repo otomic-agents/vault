@@ -87,6 +87,8 @@ export function decrypt(text: string, password: string): string {
 }
 
 export function getNormalizedIp(req: http.IncomingMessage): string | undefined {
+    console.log(req.headers,req.socket.remoteAddress)
+
     const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() || req.socket.remoteAddress;
     if (!clientIp) return undefined;
     return ip.isV6Format(clientIp) ? ip.toString(ip.toBuffer(clientIp).slice(-4)) : clientIp;
