@@ -1,4 +1,4 @@
-import { BorshInstructionCoder, Idl } from '@coral-xyz/anchor';
+import { BorshInstructionCoder, Idl, Instruction } from '@coral-xyz/anchor';
 import { Transaction } from '@solana/web3.js';
 import { config } from './config';
 import idl from './idl.json';
@@ -36,27 +36,38 @@ export class Whitelist {
 
     public isAllowedTx(ip: string, tx: Transaction): boolean {
         for (const ix of tx.instructions) {
-            const message = this.coder.decode(ix.data, 'base58');
-            if (message === null) {
-                logger.error(`Failed to decode transaction data`);
-                return false;
-            }
+            let targetProgramPubkey = ix.programId.toBase58();
+            
+            if (this.txRules.some((rule) => rule.toAddress === targetProgramPubkey)) {
+                let message: Instruction | null = null;
+                try {
+                    message = this.coder.decode(ix.data, 'base58');
+                } catch (error) {
+                    logger.error(`Failed to decode transaction data: ${JSON.stringify(error, null, 2)}`);
+                }
 
-            const method = message.name;
+                if (!message) {
+                    logger.error(`Failed to decode transaction data: got null result`);
+                    return false;
+                }
 
-            const keyAccounts = ix.keys.map((key) => key.pubkey.toBase58());
-
-            logger.info(`decoded request: ${ip}-${JSON.stringify(keyAccounts)}-${method}`);
-            for (const rule of this.txRules) {
-                if (
-                    (rule.ip === '*' || rule.ip === ip) &&
-                    (rule.toAddress === '*' || keyAccounts.includes(rule.toAddress)) &&
-                    (rule.method === '*' || rule.method === method)
-                ) {
-                    logger.info(`Transaction meets whitelist rule`);
-                    return true;
+                const method = message.name;
+    
+                const keyAccounts = ix.keys.map((key) => key.pubkey.toBase58());
+    
+                logger.info(`decoded request: ${ip}-${JSON.stringify(keyAccounts)}-${method}`);
+                for (const rule of this.txRules) {
+                    if (
+                        (rule.ip === '*' || rule.ip === ip) &&
+                        (rule.toAddress === '*' || keyAccounts.includes(rule.toAddress)) &&
+                        (rule.method === '*' || rule.method === method)
+                    ) {
+                        logger.info(`Transaction meets whitelist rule`);
+                        return true;
+                    }
                 }
             }
+            
         }
         logger.error(`Transaction does not meet any whitelist rules`);
         return false;
