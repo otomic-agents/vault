@@ -8,6 +8,9 @@ import logger from '../logger';
 import { config } from './config';
 import { decrypt } from '../utils';
 
+import { Whitelist } from './whitelist';
+import { getNormalizedIp } from '../utils';
+
 const keystoreFile = path.join(config.keystoreFolder, config.vaultName);
 
 export default class Server {
@@ -15,10 +18,12 @@ export default class Server {
     private port: number;
     private server: http.Server;
     private keypair: Keypair | undefined = undefined;
+    private whitelist: Whitelist;
 
     constructor() {
         this.port = config.port;
         this.server = http.createServer(this.requestListener.bind(this));
+        this.whitelist = new Whitelist();
     }
 
     private async loadPrivateKey() {
@@ -33,7 +38,10 @@ export default class Server {
         logger.log(`Loaded keypair with public key: ${this.keypair.publicKey.toBase58()}`);
     }
 
-    private async signTransaction(unsignedTxBase64: string): Promise<{ signature: string; publicKey: string }> {
+    private async signTransaction(
+        unsignedTxBase64: string,
+        normalizedIp: string,
+    ): Promise<{ signature: string; publicKey: string }> {
         this.loadPrivateKey();
         if (!this.keypair) {
             throw new Error('Keypair is not loaded');
@@ -43,7 +51,10 @@ export default class Server {
         const txMessage = Message.from(messageBytes);
         const unsignedTx = Transaction.populate(txMessage);
 
-        //TODO: Implement the security check
+        let isValid = this.whitelist.isAllowedTx(normalizedIp, unsignedTx);
+        if (!isValid) {
+            throw new Error('Transaction is not allowed');
+        }
 
         unsignedTx.sign(this.keypair);
         const signedTxBuffer = unsignedTx.serialize();
@@ -58,13 +69,19 @@ export default class Server {
         return ret;
     }
 
-    private async signMessage(message: string): Promise<{ signature: string; publicKey: string }> {
+    private async signMessage(
+        message: string,
+        normalizedIp: string,
+    ): Promise<{ signature: string; publicKey: string }> {
         await this.loadPrivateKey();
         if (!this.keypair) {
             throw new Error('Keypair is not loaded');
         }
 
-        //TODO: Implement the security check
+        let isValid = this.whitelist.isAllowedMsg(normalizedIp, message);
+        if (!isValid) {
+            throw new Error('Msg is not allowed');
+        }
 
         const messageBytes = new TextEncoder().encode(message);
         const signatureBytes = nacl.sign.detached(messageBytes, this.keypair.secretKey);
@@ -78,7 +95,16 @@ export default class Server {
     }
 
     private requestListener(req: http.IncomingMessage, res: http.ServerResponse): void {
-        logger.log(`Received request: ${req.method} ${req.url}`);
+        const normalizedIp = getNormalizedIp(req);
+        logger.log(`Received request: ${req.method} ${req.url} from ${normalizedIp}`);
+
+        if (!normalizedIp) {
+            logger.error('Failed to get normalized IP');
+            res.statusCode = 403;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('Forbidden');
+            return;
+        }
 
         if (req.url === '/signTx' && req.method === 'POST') {
             let body = '';
@@ -91,7 +117,7 @@ export default class Server {
                     if (!data || !data.txMessage) {
                         throw new Error('Invalid tx data');
                     }
-                    const ret = await this.signTransaction(data.txMessage);
+                    const ret = await this.signTransaction(data.txMessage, normalizedIp);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.end(
@@ -106,6 +132,10 @@ export default class Server {
                         res.statusCode = 400;
                         res.setHeader('Content-Type', 'text/plain');
                         res.end('Bad Request');
+                    } else if ((error as Error).message === 'Transaction is not allowed') {
+                        res.statusCode = 403;
+                        res.setHeader('Content-Type', 'text/plain');
+                        res.end('Forbidden');
                     } else {
                         logger.error(`Error signing EIP-712 data: ${JSON.stringify(error, null, 2)}`);
                         res.statusCode = 500;
@@ -125,7 +155,7 @@ export default class Server {
                     if (!data || !data.message) {
                         throw new Error('Invalid message data');
                     }
-                    const ret = await this.signMessage(data.message);
+                    const ret = await this.signMessage(data.message, normalizedIp);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.end(
@@ -140,6 +170,10 @@ export default class Server {
                         res.statusCode = 400;
                         res.setHeader('Content-Type', 'text/plain');
                         res.end('Bad Request');
+                    } else if ((error as Error).message === 'Msg is not allowed') {
+                        res.statusCode = 403;
+                        res.setHeader('Content-Type', 'text/plain');
+                        res.end('Forbidden');
                     } else {
                         logger.error(`Error signing EIP-712 data: ${JSON.stringify(error, null, 2)}`);
                         res.statusCode = 500;

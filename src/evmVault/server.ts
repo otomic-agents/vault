@@ -48,7 +48,7 @@ export default class Server {
 
         let isValid = this.whitelist.isAllowedTx(normalizedIp, tx);
         if (!isValid) {
-            throw new Error('Msg is not allowed');
+            throw new Error('Transaction is not allowed');
         }
 
         const unsignedTx = {
@@ -82,7 +82,7 @@ export default class Server {
 
         let isValid = this.whitelist.isAllowedMsg(normalizedIp, data);
         if (!isValid) {
-            throw new Error('Transaction is not allowed');
+            throw new Error('Msg is not allowed');
         }
 
         const signedData = await this.wallet.signTypedData(data.domain, data.types, data.signData);
