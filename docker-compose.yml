@@ -15,7 +15,7 @@ services:
             - relay_501_sign
 
     lp_9006_sign:
-        image: otmoic/vault:latest
+        image: otmoic/vault:58b43c62
         container_name: lp_9006_sign
         expose:
             - '9100'
@@ -31,7 +31,7 @@ services:
         entrypoint: ['yarn', 'run', 'run-evm-server']
 
     lp_501_sign:
-        image: otmoic/vault:latest
+        image: otmoic/vault:58b43c62
         container_name: lp_501_sign
         expose:
             - '9100'
@@ -47,7 +47,7 @@ services:
         entrypoint: ['yarn', 'run', 'run-solana-server']
 
     relay_9006_sign:
-        image: otmoic/vault:latest
+        image: otmoic/vault:58b43c62
         container_name: relay_9006_sign
         expose:
             - '9100'
@@ -63,7 +63,7 @@ services:
         entrypoint: ['yarn', 'run', 'run-evm-server']
 
     relay_501_sign:
-        image: otmoic/vault:latest
+        image: otmoic/vault:58b43c62
         container_name: relay_501_sign
         expose:
             - '9100'

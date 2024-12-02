@@ -25,6 +25,7 @@ export default class Server {
 
     private async loadPrivateKey() {
         if (!fs.existsSync(keystoreFile)) {
+            logger.log(keystoreFile)
             throw new Error(`Keystore file does not exist.${keystoreFile}`);
         }
 
