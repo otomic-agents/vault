@@ -14,7 +14,7 @@ async function generateKeystore() {
         if (replace.toLowerCase() !== 'yes') return;
     }
 
-    const password = await promptText('Enter a password to encrypt the keystore: ', true);
+    const password = await promptText('Enter a password to encrypt the keystore: ');
     const wallet = Wallet.createRandom();
     const keystore = await wallet.encrypt(password);
 
@@ -34,7 +34,7 @@ async function modifyKeystorePassword() {
         return;
     }
 
-    const oldPassword = await promptText('Enter the current password: ', true);
+    const oldPassword = await promptText('Enter the current password: ');
     const keystore = fs.readFileSync(keystoreFile, 'utf-8');
     let wallet: Wallet | HDNodeWallet;
     try {
@@ -44,7 +44,7 @@ async function modifyKeystorePassword() {
         return;
     }
 
-    const newPassword = await promptText('Enter the new password: ', true);
+    const newPassword = await promptText('Enter the new password: ');
     const newKeystore = await wallet.encrypt(newPassword);
 
     fs.writeFileSync(keystoreFile, newKeystore);

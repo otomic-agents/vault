@@ -27,7 +27,7 @@ async function addAuthAddress() {
         }
 
         // Prompt user for private key
-        const privateKey = await promptText('Enter the private key for the wallet address: ', true);
+        const privateKey = await promptText('Enter the private key for the wallet address: ');
 
         // Create a wallet instance
         let wallet: ethers.Wallet;

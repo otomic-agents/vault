@@ -14,7 +14,7 @@ async function generateKeystore() {
         if (replace.toLowerCase() !== 'yes') return;
     }
 
-    const password = await promptText('Enter a password to encrypt the keystore: ', true);
+    const password = await promptText('Enter a password to encrypt the keystore: ');
     const keypair = Keypair.generate();
     const keystore = {
         publicKey: keypair.publicKey.toBase58(),
@@ -37,7 +37,7 @@ async function modifyKeystorePassword() {
         return;
     }
 
-    const oldPassword = await promptText('Enter the current password: ', true);
+    const oldPassword = await promptText('Enter the current password: ');
     const keystore = JSON.parse(fs.readFileSync(keystoreFile, 'utf-8'));
     let secretKey: string;
     try {
@@ -47,7 +47,7 @@ async function modifyKeystorePassword() {
         return;
     }
 
-    const newPassword = await promptText('Enter the new password: ', true);
+    const newPassword = await promptText('Enter the new password: ');
     const newKeystore = {
         publicKey: keystore.publicKey,
         secretKey: encrypt(secretKey, newPassword),

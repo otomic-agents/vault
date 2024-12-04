@@ -6,55 +6,17 @@ import * as http from 'http';
 import ip from 'ip';
 import logger from './logger';
 
-export async function promptText(promptText: string, hideInput: boolean = false): Promise<string> {
+export async function promptText(promptText: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
         });
 
-        if (hideInput) {
-            process.stdout.write(promptText);
-            process.stdin.setRawMode(true);
-            process.stdin.resume();
-            let input = '';
-            process.stdin.on('data', (charBuf) => {
-                let char = charBuf.toString();
-                switch (char) {
-                    case '\n':
-                    case '\r':
-                    case '\u0004':
-                        process.stdin.setRawMode(false);
-                        process.stdin.pause();
-                        rl.close();
-                        process.stdout.write('\n');
-                        return resolve(input);
-                    case '\u0003':
-                        process.stdin.setRawMode(false);
-                        process.stdin.pause();
-                        rl.close();
-                        return reject(new Error('User aborted'));
-                    case '\u007f': // Handle backspace
-                        if (input.length > 0) {
-                            input = input.slice(0, -1);
-                            process.stdout.clearLine(0);
-                            process.stdout.cursorTo(0);
-                            process.stdout.write(promptText + '*'.repeat(input.length));
-                        }
-                        break;
-                    default:
-                        input += char;
-                        process.stdout.clearLine(0);
-                        process.stdout.cursorTo(0);
-                        process.stdout.write(promptText + '*'.repeat(input.length));
-                }
-            });
-        } else {
-            rl.question(promptText, (input) => {
-                rl.close();
-                return resolve(input);
-            });
-        }
+        rl.question(promptText, (input) => {
+            rl.close();
+            return resolve(input);
+        });
     });
 }
 
@@ -88,7 +50,7 @@ export function decrypt(text: string, password: string): string {
 }
 
 export function getNormalizedIp(req: http.IncomingMessage): string | undefined {
-    logger.info(`${req.headers}, ${req.socket.remoteAddress}`);
+    logger.info(`${JSON.stringify(req.headers, null, 2)}, ${req.socket.remoteAddress}`);
 
     const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() || req.socket.remoteAddress;
     if (!clientIp) return undefined;
