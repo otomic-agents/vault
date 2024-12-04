@@ -8,7 +8,9 @@
         "manage-evm-keystore": "ts-node src/keyStoreManager/evm.ts",
         "run-solana-server": "ts-node src/solanaVault",
         "manage-solana-keystore": "ts-node src/keyStoreManager/solana.ts",
-        "add-authAddress": "ts-node src/authAddress/addAuthAddress.ts"
+        "add-auth-address": "ts-node src/authAddress/addAuthAddress.ts",
+        "add-evm-auth-address": "ts-node src/authAddress/addEvmAuthAddress.ts",
+        "add-solana-auth-address": "ts-node src/authAddress/addSolanaAuthAddress.ts"
     },
     "keywords": [],
     "author": "",
@@ -28,6 +30,7 @@
         "bs58": "^6.0.0",
         "ethers": "^6.13.4",
         "ip": "^2.0.1",
-        "tweetnacl": "^1.0.3"
+        "tweetnacl": "^1.0.3",
+        "tweetnacl-util": "^0.15.1"
     }
 }

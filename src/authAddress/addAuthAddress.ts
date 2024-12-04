@@ -19,7 +19,7 @@ async function addAuthAddress() {
         );
 
         // Prompt user for wallet address
-        const walletAddress = await promptText(`Enter the wallet address to be added: `);
+        const walletAddress = await promptText(`Enter the Evm wallet address to be added: `);
 
         // Validate wallet address
         if (!ethers.isAddress(walletAddress)) {
@@ -27,7 +27,7 @@ async function addAuthAddress() {
         }
 
         // Prompt user for private key
-        const privateKey = await promptText('Enter the private key for the wallet address: ');
+        const privateKey = await promptText('Enter the private key for the Evm wallet address: ');
 
         // Create a wallet instance
         let wallet: ethers.Wallet;
@@ -95,7 +95,7 @@ async function addAuthAddress() {
             'Enter the did-http URL to submit request (e.g., http://127.0.0.1/sendTx/normal): ',
         );
         const uuid = generateUUID();
-
+        logger.info(`DID-HTTP uuid: ${uuid}, it can be used to query the status of the request`);
         // Send POST request to DID-HTTP server
         const didResponse = await axios.post(didHttpUrl, {
             uuid,
