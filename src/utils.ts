@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as http from 'http';
 import ip from 'ip';
+import logger from './logger';
 
 export async function promptText(promptText: string, hideInput: boolean = false): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -87,9 +88,17 @@ export function decrypt(text: string, password: string): string {
 }
 
 export function getNormalizedIp(req: http.IncomingMessage): string | undefined {
-    console.log(req.headers,req.socket.remoteAddress)
+    logger.info(`${req.headers}, ${req.socket.remoteAddress}`);
 
     const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() || req.socket.remoteAddress;
     if (!clientIp) return undefined;
     return ip.isV6Format(clientIp) ? ip.toString(ip.toBuffer(clientIp).slice(-4)) : clientIp;
+}
+
+export function getCurTimeStampInSecond(): number {
+    return Math.floor(Date.now() / 1000);
+}
+
+export function generateUUID(): string {
+    return '0x' + crypto.randomBytes(16).toString('hex');
 }

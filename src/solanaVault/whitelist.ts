@@ -35,10 +35,10 @@ export class Whitelist {
     }
 
     public isAllowedTx(ip: string, tx: Transaction): boolean {
-        console.log("allowed Tx", tx);
+        logger.info(`allowed Tx: ${JSON.stringify(tx, null, 2)}`);
         for (const ix of tx.instructions) {
             let targetProgramPubkey = ix.programId.toBase58();
-            
+
             if (this.txRules.some((rule) => rule.toAddress === targetProgramPubkey)) {
                 let message: Instruction | null = null;
                 try {
@@ -53,9 +53,9 @@ export class Whitelist {
                 }
 
                 const method = message.name;
-    
+
                 const keyAccounts = ix.keys.map((key) => key.pubkey.toBase58());
-    
+
                 logger.info(`decoded request: ${ip}-${JSON.stringify(keyAccounts)}-${method}`);
                 for (const rule of this.txRules) {
                     if (
@@ -68,7 +68,6 @@ export class Whitelist {
                     }
                 }
             }
-            
         }
         logger.error(`Transaction does not meet any whitelist rules`);
         return false;
