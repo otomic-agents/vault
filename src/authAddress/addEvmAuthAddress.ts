@@ -15,28 +15,23 @@ async function addEvmAuthAddress() {
             'The script will add the [evmWallets] tag to a terminus domain, Enter the terminus domain: ',
         );
 
-        // Prompt user for wallet address
-        const walletAddress = await promptText(`Enter the Evm wallet address to be added: `);
-
-        // Validate wallet address
-        if (!ethers.isAddress(walletAddress)) {
-            throw new Error('Invalid wallet address');
-        }
-
-        // Prompt user for private key
-        const privateKey = await promptText('Enter the private key for the Evm wallet address: ');
+        // Prompt user for domain owner private key
+        const domainOwnerPrivateKey = await promptText('Enter the private key for the terminus domainn owner: ');
 
         // Create a wallet instance
-        let wallet: ethers.Wallet;
+        let domainOwner: ethers.Wallet;
         try {
-            wallet = new ethers.Wallet(privateKey);
+            domainOwner = new ethers.Wallet(domainOwnerPrivateKey);
         } catch {
             throw new Error('Invalid private key');
         }
 
-        // Ensure the wallet address matches the provided address
-        if (wallet.address.toLowerCase() !== walletAddress.toLowerCase()) {
-            throw new Error('The provided private key does not match the wallet address');
+        // Prompt user for wallet address
+        const vaultAddress = await promptText(`Enter the Evm wallet address (vault address) to be added: `);
+
+        // Validate wallet address
+        if (!ethers.isAddress(vaultAddress)) {
+            throw new Error('Invalid vault address');
         }
 
         const chainId = 10;
@@ -61,7 +56,7 @@ async function addEvmAuthAddress() {
         };
 
         const value = {
-            addr: wallet.address,
+            addr: vaultAddress,
             domain: terminusName,
             signAt: getCurTimeStampInSecond(),
             action: Action.Add,
@@ -69,8 +64,8 @@ async function addEvmAuthAddress() {
 
         logger.info(`Signing data: ${JSON.stringify(value)}`);
 
-        const walletSig = await wallet.signTypedData(domain, types, value);
-        logger.info(`Wallet Signature: ${walletSig}`);
+        const domainOwnerSig = await domainOwner.signTypedData(domain, types, value);
+        logger.info(`Domain owner signature: ${domainOwnerSig}`);
 
         // Prompt user for vault url
         const vaultUrl = await promptText('Enter the vault URL (e.g., http://127.0.0.1/lp/9006/signEIP712): ');
@@ -83,8 +78,11 @@ async function addEvmAuthAddress() {
         });
 
         const vaultSig = response.data.signature;
-        const vaultAddress = response.data.publicKey;
-        logger.info(`Vault Signature: ${vaultSig} from vault ${vaultAddress}`);
+        const vaultAddressRet = response.data.publicKey as string;
+        if (vaultAddressRet.toLocaleLowerCase() !== vaultAddress.toLocaleLowerCase()) {
+            throw new Error('The vault address returned by the vault is not the same as the address provided');
+        }
+        logger.info(`Vault Signature: ${vaultSig} from vault ${vaultAddressRet}`);
 
         // Send to DID-HTTP server
         const didHttpUrl = await promptText(
@@ -101,8 +99,8 @@ async function addEvmAuthAddress() {
                     method: 'updateEVMWallet',
                     args: {
                         evmAuthAddressReq: value,
-                        sigFromDomainOwnerPrivKey: vaultSig,
-                        sigFromAddressPrivKey: walletSig,
+                        sigFromDomainOwnerPrivKey: domainOwnerSig,
+                        sigFromAddressPrivKey: vaultSig,
                     },
                 },
             ],

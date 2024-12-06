@@ -1,4 +1,5 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
+import { ethers } from 'ethers';
 import axios from 'axios';
 import bs58 from 'bs58';
 import nacl from 'tweetnacl';
@@ -18,32 +19,28 @@ async function addEvmAuthAddress() {
             'The script will add the [solanaWallets] tag to a terminus domain, Enter the terminus domain: ',
         );
 
-        // Prompt user for wallet address
-        const walletAddress = await promptText(`Enter the Solana wallet address (bs58 format) to be added: `);
+        // Prompt user for domain owner private key
+        const domainOwnerPrivateKey = await promptText('Enter the private key for the terminus domainn owner: ');
 
-        // Validate wallet address
-        let publicKey: PublicKey;
+        // Create a wallet instance
+        let domainOwner: ethers.Wallet;
         try {
-            publicKey = new PublicKey(walletAddress);
-        } catch {
-            throw new Error('Invalid Solana wallet address');
-        }
-
-        // Prompt user for private key
-        const privateKey = await promptText('Enter the private key (bs58 format) for the Solana wallet address: ');
-
-        // Create a keypair instance
-        let keypair: Keypair;
-        try {
-            const secretKey = bs58.decode(privateKey);
-            keypair = Keypair.fromSecretKey(secretKey);
+            domainOwner = new ethers.Wallet(domainOwnerPrivateKey);
         } catch {
             throw new Error('Invalid private key');
         }
 
-        // Ensure the wallet address matches the provided address
-        if (keypair.publicKey.toBase58() !== walletAddress) {
-            throw new Error('The provided private key does not match the wallet address');
+        // Prompt user for wallet address
+        const vaultAddressStr = await promptText(
+            `Enter the Solana wallet address ata the vault address (bs58 format) to be added: `,
+        );
+
+        // Validate wallet address
+        let vaultAddress: PublicKey;
+        try {
+            vaultAddress = new PublicKey(vaultAddressStr);
+        } catch {
+            throw new Error('Invalid Solana wallet address');
         }
 
         const chainId = 10;
@@ -66,34 +63,34 @@ async function addEvmAuthAddress() {
         };
 
         const value = {
-            addr: '0x' + keypair.publicKey.toBuffer().toString('hex'),
+            addr: '0x' + vaultAddress.toBuffer().toString('hex'),
             domain: terminusName,
             signAt: getCurTimeStampInSecond(),
             action: Action.Add,
         };
 
-        const solanaMsg =
-            'prove ownership of Solana wallet ' + keypair.publicKey.toBase58() + ' for Terminus DID ' + value.domain;
-        logger.info(`solana msg: ${solanaMsg}`);
-        const sigFromAuthAddr =
-            '0x' + Buffer.from(nacl.sign.detached(decodeUTF8(solanaMsg), keypair.secretKey)).toString('hex');
-        logger.info(`solana sig: ${sigFromAuthAddr}`);
-
-        logger.info(`EIP712 Domain: ${JSON.stringify(domain)}`);
         logger.info(`Signing data: ${JSON.stringify(value)}`);
 
+        const domainOwnerSig = await domainOwner.signTypedData(domain, types, value);
+        logger.info(`Domain owner signature: ${domainOwnerSig}`);
+
+        const solanaMsg =
+            'prove ownership of Solana wallet ' + vaultAddress.toBase58() + ' for Terminus DID ' + value.domain;
+        logger.info(`Vault solana signing msg: ${solanaMsg}`);
+
         // Prompt user for vault url
-        const vaultUrl = await promptText('Enter the vault URL (e.g., http://127.0.0.1/lp/9006/signEIP712): ');
+        const vaultUrl = await promptText('Enter the vault URL (e.g., http://127.0.0.1/lp/501/signEIP712): ');
 
         // Send POST request to vault URL to get signature from vault wallet
         const response = await axios.post(vaultUrl, {
-            domain,
-            types,
-            signData: value,
+            message: solanaMsg,
         });
 
-        const vaultSig = response.data.signature;
-        const vaultAddress = response.data.publicKey;
+        const vaultSig = '0x' + response.data.signature;
+        const vaultAddressRet = response.data.publicKey as string;
+        if (vaultAddressRet.toLocaleLowerCase() !== vaultAddress.toBase58().toLocaleLowerCase()) {
+            throw new Error('The vault address returned by the vault is not the same as the address provided');
+        }
         logger.info(`Vault Signature: ${vaultSig} from vault ${vaultAddress}`);
 
         // Send to DID-HTTP server
@@ -111,8 +108,8 @@ async function addEvmAuthAddress() {
                     method: 'updateSolanaWallet',
                     args: {
                         solanaAuthAddressReq: value,
-                        sigFromDomainOwnerPrivKey: vaultSig,
-                        sigFromAddressPrivKey: sigFromAuthAddr,
+                        sigFromDomainOwnerPrivKey: domainOwnerSig,
+                        sigFromAddressPrivKey: vaultSig,
                     },
                 },
             ],

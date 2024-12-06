@@ -74,6 +74,7 @@ export class Whitelist {
     }
 
     public isAllowedMsg(ip: string, msg: string): boolean {
+        logger.info(`request: ${ip}-${msg}`);
         for (const rule of this.msgRules) {
             if ((rule.ip === '*' || rule.ip === ip) && (rule.substring === '*' || msg.includes(rule.substring))) {
                 logger.info(`Msg meets whitelist rule`);
