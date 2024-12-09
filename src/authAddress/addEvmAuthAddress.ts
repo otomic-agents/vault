@@ -8,6 +8,16 @@ const Action = {
     Remove: 1,
 };
 
+const SignatureAlogorithm = {
+    ECDSA: 0,
+    Ed25519: 1,
+};
+
+const Chain = {
+    EVM: 'evm',
+    Solana: 'solana',
+};
+
 async function addEvmAuthAddress() {
     try {
         // Prompt user for domain
@@ -84,26 +94,23 @@ async function addEvmAuthAddress() {
         }
         logger.info(`Vault Signature: ${vaultSig} from vault ${vaultAddressRet}`);
 
-        // Send to DID-HTTP server
-        const didHttpUrl = await promptText(
-            'Enter the did-http URL to submit request (e.g., http://127.0.0.1/sendTx/normal): ',
-        );
         const uuid = generateUUID();
         logger.info(`DID-HTTP uuid: ${uuid}, it can be used to query the status of the request`);
         // Send POST request to DID-HTTP server
-        const didResponse = await axios.post(didHttpUrl, {
-            uuid,
-            calls: [
-                {
-                    target: 'tag2',
-                    method: 'updateEVMWallet',
-                    args: {
-                        evmAuthAddressReq: value,
-                        sigFromDomainOwnerPrivKey: domainOwnerSig,
-                        sigFromAddressPrivKey: vaultSig,
-                    },
-                },
-            ],
+        const didHttpServiceUrl = 'https://did-gate-v3.bttcdn.com/addAuthenticationAddressV2';
+        const didResponse = await axios.post(didHttpServiceUrl, {
+            sigFromAddressPrivKey: vaultSig,
+            sigFromDomainOwnerPrivKey: domainOwnerSig,
+            authAddressReq: {
+                addr: value.addr,
+                algorithm: SignatureAlogorithm.ECDSA,
+                domain: value.domain,
+                signAt: value.signAt,
+                action: value.action,
+                chain: Chain.EVM,
+            },
+            uuid: uuid,
+            index: 0,
         });
 
         logger.info(`DID-HTTP Response: ${JSON.stringify(didResponse.data)}`);
