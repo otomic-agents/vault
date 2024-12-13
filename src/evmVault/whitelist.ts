@@ -43,6 +43,11 @@ export class Whitelist {
     }
 
     public isAllowedTx(ip: string, tx: Transaction): boolean {
+        if (!tx.to || !tx.data) {
+            logger.error(`Transaction does not have a to address or data field`);
+            return false;
+        }
+
         let parsedTransaction: TransactionDescription | null;
         try {
             parsedTransaction = this.iface.parseTransaction({ data: tx.data });
@@ -63,7 +68,7 @@ export class Whitelist {
         for (const rule of this.txRules) {
             if (
                 (rule.ip === '*' || rule.ip === ip) &&
-                (rule.toAddress.toLocaleLowerCase() === '*' || rule.toAddress.toLocaleLowerCase() === tx.to) &&
+                (rule.toAddress === '*' || rule.toAddress.toLocaleLowerCase() === tx.to.toLocaleLowerCase()) &&
                 (rule.method === '*' || rule.method === parsedTransaction.name)
             ) {
                 if (!rule.paras) {
