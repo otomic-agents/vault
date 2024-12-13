@@ -2,6 +2,7 @@ import { Interface, Transaction, TransactionDescription, TypedDataDomain, TypedD
 import { config } from './config';
 import abi from './abi.json';
 import logger from '../logger';
+import { bigIntReplacer } from '../utils';
 
 interface TxWhitelistRule {
     ip: string;
@@ -56,7 +57,9 @@ export class Whitelist {
         }
 
         const requestedParas = parsedTransaction.args.toArray();
-        logger.info(`decoded request: ${ip}-${tx.to}-${parsedTransaction.name}-${JSON.stringify(requestedParas)}`);
+        logger.info(
+            `decoded request: ${ip}-${tx.to}-${parsedTransaction.name}-${JSON.stringify(requestedParas, bigIntReplacer, 2)}`,
+        );
         for (const rule of this.txRules) {
             if (
                 (rule.ip === '*' || rule.ip === ip) &&

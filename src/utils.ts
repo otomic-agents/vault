@@ -64,3 +64,7 @@ export function getCurTimeStampInSecond(): number {
 export function generateUUID(): string {
     return '0x' + crypto.randomBytes(16).toString('hex');
 }
+
+export function bigIntReplacer(key: string, value: any) {
+    return typeof value === 'bigint' ? value.toString() : value;
+}

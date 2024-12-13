@@ -20,12 +20,12 @@ services:
             - relay_9006_sign
             - relay_501_sign
         networks:
-            - vault_network  
+            - vault_network
         ports:
-            - "19001:19000"
+            - '19001:19000'
 
     lp_9006_sign:
-        image: otmoic/vault:78a3a37e
+        image: otmoic/vault:latest
         container_name: lp_9006_sign
         expose:
             - '9100'
@@ -36,14 +36,14 @@ services:
             VAULT_NAME: 'keystore'
             VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
             PORT: '9100'
-            SIGN_TX_WHITELISTS: '172.31.44.214-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*,172.31.44.214-0x55d398326f99059fF775485246999027B3197955-*'
-            SIGN_MSG_WHITELISTS: '172.31.44.214-OtmoicSwap-Message,172.31.44.214-Otmoic Reputation-Complaint'
+            SIGN_TX_WHITELISTS: '172.31.44.214-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*-*,172.31.44.214-*-approve-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84'
+            SIGN_MSG_WHITELISTS: '172.31.44.214-OtmoicSwap-Message,172.31.44.214-Otmoic Reputation-Complaint,*-Terminus DID Root Tagger-AuthAddressReq,*-Terminus DID Root Tagger-EVMAuthAddressReq'
         entrypoint: ['yarn', 'run', 'run-evm-server']
         networks:
             - vault_network
 
     lp_501_sign:
-        image: otmoic/vault:78a3a37e
+        image: otmoic/vault:latest
         container_name: lp_501_sign
         expose:
             - '9100'
@@ -54,14 +54,14 @@ services:
             VAULT_NAME: 'keystore'
             VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
             PORT: '9100'
-            SIGN_TX_WHITELISTS: '172.31.44.214-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*172.31.44.214-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,172.31.44.214-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*'
-            SIGN_MSG_WHITELISTS: '172.31.44.214-*,*-src_chain_id'
+            SIGN_TX_WHITELISTS: '172.31.44.214-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,172.31.44.214-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-Transfer,172.31.44.214-11111111111111111111111111111111-Transfer'
+            SIGN_MSG_WHITELISTS: '172.31.44.214-*,*-*'
         entrypoint: ['yarn', 'run', 'run-solana-server']
         networks:
             - vault_network
 
     relay_9006_sign:
-        image: otmoic/vault:78a3a37e
+        image: otmoic/vault:latest
         container_name: relay_9006_sign
         expose:
             - '9100'
@@ -72,14 +72,14 @@ services:
             VAULT_NAME: 'keystore'
             VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
             PORT: '9100'
-            SIGN_TX_WHITELISTS: '172.31.44.214-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*,172.31.44.214-0x55d398326f99059fF775485246999027B3197955-*'
-            SIGN_MSG_WHITELISTS: '172.31.44.214-OtmoicSwap-Message,172.31.44.214-Otmoic Reputation-Complaint'
+            SIGN_TX_WHITELISTS: '172.31.44.214-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*-*,172.31.44.214-*-approve-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84'
+            SIGN_MSG_WHITELISTS: '172.31.44.214-OtmoicSwap-Message,172.31.44.214-Otmoic Reputation-Complaint,*-Terminus DID Root Tagger-AuthAddressReq,*-Terminus DID Root Tagger-EVMAuthAddressReq'
         entrypoint: ['yarn', 'run', 'run-evm-server']
         networks:
             - vault_network
 
     relay_501_sign:
-        image: otmoic/vault:78a3a37e
+        image: otmoic/vault:latest
         container_name: relay_501_sign
         expose:
             - '9100'
@@ -90,8 +90,8 @@ services:
             VAULT_NAME: 'keystore'
             VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
             PORT: '9100'
-            SIGN_TX_WHITELISTS: '172.31.44.214-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,172.31.44.214-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*'
-            SIGN_MSG_WHITELISTS: '172.31.44.214-*,*-src_chain_id'
+            SIGN_TX_WHITELISTS: '172.31.44.214-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,172.31.44.214-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-Transfer,172.31.44.214-11111111111111111111111111111111-Transfer'
+            SIGN_MSG_WHITELISTS: '172.31.44.214-*,*-*'
         entrypoint: ['yarn', 'run', 'run-solana-server']
         networks:
             - vault_network

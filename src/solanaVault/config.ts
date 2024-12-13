@@ -8,10 +8,9 @@ export const config = {
     signTxWhitelists: process.env.SIGN_TX_WHITELISTS
         ? process.env.SIGN_TX_WHITELISTS.split(',')
         : [
-              '192.168.0.1-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-prepare',
-              '192.168.0.1-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-confirm',
-              '192.168.0.1-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-refund',
-              '192.168.0.1-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*',
+              '192.168.0.1-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*',
+              '192.168.0.1-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-Transfer',
+              '192.168.0.1-11111111111111111111111111111111-Transfer',
           ],
 
     signMsgWhitelists: process.env.SIGN_MSG_WHITELISTS

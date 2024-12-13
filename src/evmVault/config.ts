@@ -8,12 +8,7 @@ export const config = {
     signTxWhitelists: process.env.SIGN_TX_WHITELISTS
         ? process.env.SIGN_TX_WHITELISTS.split(',')
         : [
-              '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-transferOut-*',
-              '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-transferIn-*',
-              '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-refundTransferOut-*',
-              '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-refundTransferIn-*',
-              '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-confirmTransferOut-*',
-              '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-confirmTransferIn-*',
+              '192.168.0.1-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*-*',
               '192.168.0.1-*-approve-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84',
           ],
 
