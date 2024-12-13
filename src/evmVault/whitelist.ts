@@ -7,6 +7,7 @@ interface TxWhitelistRule {
     ip: string;
     toAddress: string;
     method: string;
+    paras: string | undefined;
 }
 
 interface MsgWhitelistRule {
@@ -28,8 +29,8 @@ export class Whitelist {
 
     constructor() {
         this.txRules = config.signTxWhitelists.map((rule) => {
-            const [ip, toAddress, method] = rule.split('-');
-            return { ip, toAddress, method };
+            const [ip, toAddress, method, paras] = rule.split('-');
+            return { ip, toAddress, method, paras };
         });
         logger.info(`txRules: ${JSON.stringify(this.txRules, null, 2)}`);
         this.msgRules = config.signMsgWhitelists.map((rule) => {
@@ -54,15 +55,30 @@ export class Whitelist {
             return false;
         }
 
-        logger.info(`decoded request: ${ip}-${tx.to}-${parsedTransaction.name}`);
+        const requestedParas = parsedTransaction.args.toArray();
+        logger.info(`decoded request: ${ip}-${tx.to}-${parsedTransaction.name}-${JSON.stringify(requestedParas)}`);
         for (const rule of this.txRules) {
             if (
                 (rule.ip === '*' || rule.ip === ip) &&
-                (rule.toAddress === '*' || rule.toAddress === tx.to) &&
+                (rule.toAddress.toLocaleLowerCase() === '*' || rule.toAddress.toLocaleLowerCase() === tx.to) &&
                 (rule.method === '*' || rule.method === parsedTransaction.name)
             ) {
-                logger.info(`Transaction meets whitelist rule`);
-                return true;
+                if (!rule.paras) {
+                    logger.info(`Transaction meets whitelist rule: ${JSON.stringify(rule)}`);
+                    return true;
+                }
+
+                let paras = rule.paras.split('|');
+                for (let i = 0; i < requestedParas.length; i++) {
+                    if (i === paras.length) {
+                        logger.info(`Transaction meets whitelist rule: ${JSON.stringify(rule)}`);
+                        return true;
+                    }
+
+                    if (paras[i] !== '*' && paras[i].toLocaleLowerCase() !== requestedParas[i].toLocaleLowerCase()) {
+                        break;
+                    }
+                }
             }
         }
         logger.error(`Transaction does not meet any whitelist rules`);

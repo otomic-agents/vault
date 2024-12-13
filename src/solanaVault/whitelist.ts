@@ -36,34 +36,44 @@ export class Whitelist {
 
     public isAllowedTx(ip: string, tx: Transaction): boolean {
         logger.info(`allowed Tx: ${JSON.stringify(tx, null, 2)}`);
+
+        logger.info(`requested IP: ${ip}`);
+        const ipFilteredWhitelist = this.txRules.filter((rule) => rule.ip === ip || rule.ip === '*');
+        if (ipFilteredWhitelist.length === 0) {
+            logger.error(`Request IP does not meet any whitelisted IP`);
+            return false;
+        }
+
         for (const ix of tx.instructions) {
             let targetProgramPubkey = ix.programId.toBase58();
+            logger.info(`requested contract address: ${targetProgramPubkey}`);
 
-            if (this.txRules.some((rule) => rule.toAddress === targetProgramPubkey)) {
-                let message: Instruction | null = null;
-                try {
-                    message = this.coder.decode(ix.data, 'base58');
-                } catch (error) {
-                    logger.error(`Failed to decode transaction data: ${JSON.stringify(error, null, 2)}`);
-                }
+            for (let rule of ipFilteredWhitelist) {
+                if (rule.toAddress === targetProgramPubkey || rule.toAddress === '*') {
+                    let message: Instruction | null = null;
+                    try {
+                        message = this.coder.decode(ix.data, 'base58');
+                    } catch (error) {
+                        logger.error(`Failed to decode transaction data: ${JSON.stringify(error, null, 2)}`);
+                    }
 
-                if (!message) {
-                    logger.error(`Failed to decode transaction data: got null result`);
-                    return false;
-                }
+                    if (!message) {
+                        if (rule.method === '*') {
+                            logger.info(
+                                `Though failed to decode transaction data, it meets the whitelist rule: ${JSON.stringify(rule)}`,
+                            );
+                            return true;
+                        } else {
+                            logger.error(`Failed to decode transaction data: got null result`);
+                            return false;
+                        }
+                    }
 
-                const method = message.name;
+                    const method = message.name;
 
-                const keyAccounts = ix.keys.map((key) => key.pubkey.toBase58());
-
-                logger.info(`decoded request: ${ip}-${JSON.stringify(keyAccounts)}-${method}`);
-                for (const rule of this.txRules) {
-                    if (
-                        (rule.ip === '*' || rule.ip === ip) &&
-                        (rule.toAddress === '*' || keyAccounts.includes(rule.toAddress)) &&
-                        (rule.method === '*' || rule.method === method)
-                    ) {
-                        logger.info(`Transaction meets whitelist rule`);
+                    logger.info(`requested method name ${method}`);
+                    if (rule.method === method || rule.method === '*') {
+                        logger.info(`Transaction meets whitelist rule: ${JSON.stringify(rule)}`);
                         return true;
                     }
                 }
