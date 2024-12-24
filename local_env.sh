@@ -1,0 +1,6 @@
+export KEYSTORE_FOLDER='/app/keystore'
+export VAULT_NAME='keystore'
+export VAULT_PASSWORD='1Q2Q3Q4Q8Q'
+export PORT='9100'
+export SIGN_TX_WHITELISTS='172.31.44.214-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,172.31.44.214-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-*'
+export SIGN_MSG_WHITELISTS='172.31.44.214-*,*-src_chain_id'
