@@ -23,11 +23,11 @@ async function addEvmAuthAddress() {
     try {
         // Prompt user for domain
         const terminusName = await promptText(
-            'The script will add the [solanaWallets] tag to a terminus domain, Enter the terminus domain: ',
+            'The script will add the [solanaWallets] tag to a olares domain, Enter the olares domain: ',
         );
 
         // Prompt user for domain owner private key
-        const domainOwnerPrivateKey = await promptText('Enter the private key for the terminus domainn owner: ');
+        const domainOwnerPrivateKey = await promptText('Enter the private key for the olares domainn owner: ');
 
         // Create a wallet instance
         let domainOwner: ethers.Wallet;
