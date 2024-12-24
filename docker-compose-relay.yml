@@ -15,50 +15,12 @@ services:
         volumes:
             - ./nginx.conf:/etc/nginx/nginx.conf:ro
         depends_on:
-            - lp_9006_sign
-            - lp_501_sign
             - relay_9006_sign
             - relay_501_sign
         networks:
             - vault_network
         ports:
             - '19001:19000'
-
-    lp_9006_sign:
-        image: otmoic/vault:latest
-        container_name: lp_9006_sign
-        expose:
-            - '9100'
-        volumes:
-            - /terminus/node-data/keystore/lp_9006_keystore/:/app/keystore
-        environment:
-            KEYSTORE_FOLDER: '/app/keystore'
-            VAULT_NAME: 'keystore'
-            VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
-            PORT: '9100'
-            SIGN_TX_WHITELISTS: '172.31.44.214-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*-*,172.31.44.214-*-approve-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84'
-            SIGN_MSG_WHITELISTS: '172.31.44.214-OtmoicSwap-Message,172.31.44.214-Otmoic Reputation-Complaint,*-Terminus DID Root Tagger-AuthAddressReq,*-Terminus DID Root Tagger-EVMAuthAddressReq'
-        entrypoint: ['yarn', 'run', 'run-evm-server']
-        networks:
-            - vault_network
-
-    lp_501_sign:
-        image: otmoic/vault:latest
-        container_name: lp_501_sign
-        expose:
-            - '9100'
-        volumes:
-            - /terminus/node-data/keystore/lp_501_keystore/:/app/keystore
-        environment:
-            KEYSTORE_FOLDER: '/app/keystore'
-            VAULT_NAME: 'keystore'
-            VAULT_PASSWORD: '1Q2Q3Q4Q8Q'
-            PORT: '9100'
-            SIGN_TX_WHITELISTS: '172.31.44.214-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,172.31.44.214-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-Transfer,172.31.44.214-11111111111111111111111111111111-Transfer'
-            SIGN_MSG_WHITELISTS: '172.31.44.214-*,*-*'
-        entrypoint: ['yarn', 'run', 'run-solana-server']
-        networks:
-            - vault_network
 
     relay_9006_sign:
         image: otmoic/vault:latest
