@@ -86,6 +86,8 @@ export default class Server {
             throw new Error('Msg is not allowed');
         }
 
+        logger.info(`Sign EIP-712 data: ${JSON.stringify(data)}`);
+
         const signedData = await this.wallet.signTypedData(data.domain, data.types, data.signData);
         logger.log(`Signed EIP-712 data: ${signedData}`);
         const ret = {
