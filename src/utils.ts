@@ -6,7 +6,7 @@ import * as http from 'http';
 import ip from 'ip';
 import logger from './logger';
 
-export async function promptText(promptText: string): Promise<string> {
+export async function promptTextNoDefault(promptText: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const rl = readline.createInterface({
             input: process.stdin,
@@ -16,6 +16,20 @@ export async function promptText(promptText: string): Promise<string> {
         rl.question(promptText, (input) => {
             rl.close();
             return resolve(input);
+        });
+    });
+}
+
+export async function promptText(promptText: string, defaultInput: string = ''): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        });
+
+        rl.question(`${promptText} (default: ${defaultInput}): `, (input) => {
+            rl.close();
+            return resolve(input.trim() === '' ? defaultInput : input);
         });
     });
 }

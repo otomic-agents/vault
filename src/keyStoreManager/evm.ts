@@ -1,20 +1,21 @@
 import { HDNodeWallet, Wallet } from 'ethers';
 import * as fs from 'fs';
 import logger from '../logger';
-import { promptText, resolveKeystorePath } from '../utils';
+import { promptText, promptTextNoDefault, resolveKeystorePath } from '../utils';
 
 async function generateKeystore() {
     const userInputKeystoreFile = await promptText(
-        'Enter the full path for the keystore file (e.g., /path/to/keystore.json): ',
+        'Enter the full path for the keystore file (e.g., /path/to/keystore.json)',
+        './evm-keystore.json'
     );
     const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
 
     if (fs.existsSync(keystoreFile)) {
-        const replace = await promptText('Keystore already exists. Do you want to replace it? (yes/no): ');
+        const replace = await promptText('Keystore already exists. Do you want to replace it? (yes/no)', 'no');
         if (replace.toLowerCase() !== 'yes') return;
     }
 
-    const password = await promptText('Enter a password to encrypt the keystore: ');
+    const password = await promptTextNoDefault('Enter a password to encrypt the keystore:');
     const wallet = Wallet.createRandom();
     const keystore = await wallet.encrypt(password);
 
@@ -69,8 +70,10 @@ async function showPublicKey() {
 
 async function main() {
     const action = await promptText(
-        'Do you want to generate a new keystore, modify the password, or show the public key? (generate/modify/show): ',
+        'Do you want to generate a new keystore, modify the password, or show the public key? (generate/modify/show) ',
+        'generate'
     );
+
     if (action.toLowerCase() === 'generate') {
         await generateKeystore();
     } else if (action.toLowerCase() === 'modify') {
