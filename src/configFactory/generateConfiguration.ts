@@ -377,27 +377,23 @@ const rewriteSolanaPassword = (password: string) => new Promise<void>((resolve, 
 })
 
 const rewriteSignerListenPort = (port: string) => new Promise<void>((resolve, reject) => {
-    // Define the path to the docker-compose file
-    const filePath = './signer/docker-compose.yml';
 
-    // Reading a file
+    const filePath = './signer/front_nginx.conf';
+
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
             console.error(`Error reading file: ${err}`);
             return;
         }
 
-        // Use regular expressions to replace '19000:19000' in front_nginx's ports with 'xxxxx:19000'
-        const modifiedData = data.replace(/(front_nginx:\s*[\s\S]*?ports:\s*-\s*')19000:19000(')/, `$1${port}:19000$2`);
+        const modifiedData = data.replace(/(listen\s*)19000/, `$1${port}`);
 
-        // Write the modified data back to the file
         fs.writeFile(filePath, modifiedData, 'utf8', (err) => {
             if (err) {
                 console.error(`Error writing file: ${err}`);
                 return;
             }
             console.log(`File ${filePath} has been updated successfully.`);
-            resolve()
         });
     });
 })

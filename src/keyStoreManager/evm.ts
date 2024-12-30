@@ -4,11 +4,12 @@ import logger from '../logger';
 import { promptText, promptTextNoDefault, resolveKeystorePath } from '../utils';
 
 async function generateKeystore() {
-    const userInputKeystoreFile = await promptText(
-        'Enter the full path for the keystore file (e.g., /path/to/keystore.json)',
-        './evm-keystore.json'
-    );
-    const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
+    // const userInputKeystoreFile = await promptText(
+    //     'Enter the full path for the keystore file (e.g., /path/to/keystore.json)',
+    //     './evm-keystore.json'
+    // );
+    // const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
+    const keystoreFile = './evm-keystore.json'
 
     if (fs.existsSync(keystoreFile)) {
         const replace = await promptText('Keystore already exists. Do you want to replace it? (yes/no)', 'no');

@@ -5,11 +5,13 @@ import logger from '../logger';
 import { promptText, encrypt, decrypt, resolveKeystorePath, promptTextNoDefault } from '../utils';
 
 async function generateKeystore() {
-    const userInputKeystoreFile = await promptText(
-        'Enter the full path for the keystore file (e.g., /path/to/keystore.json)',
-        './solana-keystore.json'
-    );
-    const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
+    // const userInputKeystoreFile = await promptText(
+    //     'Enter the full path for the keystore file (e.g., /path/to/keystore.json)',
+    //     './solana-keystore.json'
+    // );
+    // const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
+    const keystoreFile = './solana-keystore.json'
+
     if (fs.existsSync(keystoreFile)) {
         const replace = await promptText('Keystore already exists. Do you want to replace it? (yes/no) ', 'no');
         if (replace.toLowerCase() !== 'yes') return;
@@ -24,7 +26,7 @@ async function generateKeystore() {
 
     fs.writeFileSync(keystoreFile, JSON.stringify(keystore, null, 2));
     logger.log(`Public Key: ${keystore.publicKey}`);
-    logger.log('Keystore saved to keystore/solana.json');
+    logger.log(`Keystore saved to ${keystoreFile}`);
 }
 
 async function modifyKeystorePassword() {
