@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import axios from 'axios';
-import { promptText, getCurTimeStampInSecond, generateUUID } from '../utils';
+import { promptText, getCurTimeStampInSecond, generateUUID, promptTextNoDefault } from '../utils';
 import logger from '../logger';
 
 const Action = {
@@ -21,12 +21,12 @@ const Chain = {
 async function addEvmAuthAddress() {
     try {
         // Prompt user for domain
-        const terminusName = await promptText(
+        const terminusName = await promptTextNoDefault(
             'The script will add the [evmWallets] tag to a olares domain, Enter the olares domain: ',
         );
 
         // Prompt user for domain owner private key
-        const domainOwnerPrivateKey = await promptText('Enter the private key for the olares domainn owner: ');
+        const domainOwnerPrivateKey = await promptTextNoDefault('Enter the private key for the olares domainn owner: ');
 
         // Create a wallet instance
         let domainOwner: ethers.Wallet;
@@ -37,7 +37,11 @@ async function addEvmAuthAddress() {
         }
 
         // Prompt user for wallet address
-        const vaultAddress = await promptText(`Enter the Evm wallet address (vault address) to be added: `);
+        let vaultAddress = await promptTextNoDefault(`Enter the Evm wallet address (vault address) to be added: `);
+
+        if (!vaultAddress.startsWith('0x')) {
+            vaultAddress = `0x${vaultAddress}`
+        }
 
         // Validate wallet address
         if (!ethers.isAddress(vaultAddress)) {
@@ -78,7 +82,7 @@ async function addEvmAuthAddress() {
         logger.info(`Domain owner signature: ${domainOwnerSig}`);
 
         // Prompt user for vault url
-        const vaultUrl = await promptText('Enter the vault URL (e.g., http://127.0.0.1/lp/9006/signEIP712): ');
+        const vaultUrl = await promptText('Enter the vault URL', 'http://127.0.0.1:19000/lp/9006/signEIP712');
 
         // Send POST request to vault URL to get signature from vault wallet
         const response = await axios.post(vaultUrl, {
