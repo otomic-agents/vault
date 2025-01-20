@@ -484,5 +484,58 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_sender", "type": "address" },
+            { "internalType": "address", "name": "_receiver", "type": "address" },
+            { "internalType": "address", "name": "_srcToken", "type": "address" },
+            { "internalType": "uint256", "name": "_srcAmount", "type": "uint256" },
+            { "internalType": "address", "name": "_dstToken", "type": "address" },
+            { "internalType": "uint256", "name": "_dstAmount", "type": "uint256" },
+            { "internalType": "uint64", "name": "_stepTime", "type": "uint64" },
+            { "internalType": "uint64", "name": "_agreementReachedTime", "type": "uint64" }
+        ],
+        "name": "confirmSwap",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_sender", "type": "address" },
+            { "internalType": "address", "name": "_receiver", "type": "address" },
+            { "internalType": "address", "name": "_srcToken", "type": "address" },
+            { "internalType": "uint256", "name": "_srcAmount", "type": "uint256" },
+            { "internalType": "address", "name": "_dstToken", "type": "address" },
+            { "internalType": "uint256", "name": "_dstAmount", "type": "uint256" },
+            { "internalType": "uint64", "name": "_stepTime", "type": "uint64" },
+            { "internalType": "uint64", "name": "_agreementReachedTime", "type": "uint64" },
+            { "internalType": "bytes32", "name": "_bidId", "type": "bytes32" },
+            { "internalType": "string", "name": "_requestor", "type": "string" },
+            { "internalType": "string", "name": "_lpId", "type": "string" },
+            { "internalType": "string", "name": "_userSign", "type": "string" },
+            { "internalType": "string", "name": "_lpSign", "type": "string" }
+        ],
+        "name": "initSwap",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_sender", "type": "address" },
+            { "internalType": "address", "name": "_receiver", "type": "address" },
+            { "internalType": "address", "name": "_srcToken", "type": "address" },
+            { "internalType": "uint256", "name": "_srcAmount", "type": "uint256" },
+            { "internalType": "address", "name": "_dstToken", "type": "address" },
+            { "internalType": "uint256", "name": "_dstAmount", "type": "uint256" },
+            { "internalType": "uint64", "name": "_stepTime", "type": "uint64" },
+            { "internalType": "uint64", "name": "_agreementReachedTime", "type": "uint64" }
+        ],
+        "name": "refundSwap",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     }
 ]
