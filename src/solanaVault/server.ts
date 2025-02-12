@@ -43,7 +43,7 @@ export default class Server {
         unsignedTxBase64: string,
         normalizedIp: string,
     ): Promise<{ signature: string; publicKey: string }> {
-        this.loadPrivateKey();
+        await this.loadPrivateKey();
         if (!this.keypair) {
             throw new Error('Keypair is not loaded');
         }
@@ -138,7 +138,7 @@ export default class Server {
                         res.setHeader('Content-Type', 'text/plain');
                         res.end('Forbidden');
                     } else {
-                        logger.error(`Error signing EIP-712 data: ${JSON.stringify(error, null, 2)}`);
+                        logger.error(`Error signing transaction: ${(error as Error).message}\n${(error as Error).stack}`);
                         res.statusCode = 500;
                         res.setHeader('Content-Type', 'text/plain');
                         res.end('Internal Server Error');
