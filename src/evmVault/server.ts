@@ -141,7 +141,9 @@ export default class Server {
                         res.setHeader('Content-Type', 'text/plain');
                         res.end('Forbidden');
                     } else {
-                        logger.error(`Error signing transaction: ${(error as Error).message}\n${(error as Error).stack}`);
+                        logger.error(
+                            `Error signing transaction: ${(error as Error).message}\n${(error as Error).stack}`,
+                        );
                         res.statusCode = 500;
                         res.setHeader('Content-Type', 'text/plain');
                         res.end('Internal Server Error');

@@ -9,7 +9,7 @@ async function generateKeystore() {
     //     './evm-keystore.json'
     // );
     // const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
-    const keystoreFile = './evm-keystore.json'
+    const keystoreFile = './evm-keystore.json';
 
     if (fs.existsSync(keystoreFile)) {
         const replace = await promptText('Keystore already exists. Do you want to replace it? (yes/no)', 'no');
@@ -69,11 +69,33 @@ async function showPublicKey() {
     logger.log(`Public Key: 0x${wallet.address}`);
 }
 
-async function main() {
-    const action = await promptText(
-        'Do you want to generate a new keystore, modify the password, or show the public key? (generate/modify/show) ',
-        'generate'
+async function showPrivateKey() {
+    const userInputKeystoreFile = await promptText(
+        'Enter the full path for the keystore file (e.g., /path/to/keystore.json): ',
     );
+    const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
+
+    if (!fs.existsSync(keystoreFile)) {
+        logger.error('Keystore file does not exist.');
+        return;
+    }
+
+    const password = await promptText('Enter the password to decrypt the keystore: ');
+    const keystore = fs.readFileSync(keystoreFile, 'utf-8');
+
+    try {
+        const wallet = await Wallet.fromEncryptedJson(keystore, password);
+        logger.log(`Public Key: ${wallet.address}`);
+        logger.log(`Private Key: ${wallet.privateKey}`);
+        logger.log(`WARNING: Please keep your private key secure and do not share it with anyone!`);
+    } catch (error) {
+        logger.error('Invalid password or corrupted keystore file.');
+        return;
+    }
+}
+
+async function main() {
+    const action = await promptText('Choose an action: generate/modify/show/show-private: ', 'generate');
 
     if (action.toLowerCase() === 'generate') {
         await generateKeystore();
@@ -81,6 +103,8 @@ async function main() {
         await modifyKeystorePassword();
     } else if (action.toLowerCase() === 'show') {
         await showPublicKey();
+    } else if (action.toLowerCase() === 'show-private') {
+        await showPrivateKey();
     } else {
         logger.error('Invalid action.');
     }

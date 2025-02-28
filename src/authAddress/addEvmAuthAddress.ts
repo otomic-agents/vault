@@ -40,7 +40,7 @@ async function addEvmAuthAddress() {
         let vaultAddress = await promptTextNoDefault(`Enter the Evm wallet address (vault address) to be added: `);
 
         if (!vaultAddress.startsWith('0x')) {
-            vaultAddress = `0x${vaultAddress}`
+            vaultAddress = `0x${vaultAddress}`;
         }
 
         // Validate wallet address

@@ -10,7 +10,7 @@ async function generateKeystore() {
     //     './solana-keystore.json'
     // );
     // const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
-    const keystoreFile = './solana-keystore.json'
+    const keystoreFile = './solana-keystore.json';
 
     if (fs.existsSync(keystoreFile)) {
         const replace = await promptText('Keystore already exists. Do you want to replace it? (yes/no) ', 'no');
@@ -75,17 +75,42 @@ async function showPublicKey() {
     logger.log(`Public Key: ${keystore.publicKey}`);
 }
 
-async function main() {
-    const action = await promptText(
-        'Do you want to generate a new keystore, modify the password, or show the public key? (generate/modify/show) ',
-        'generate'
+async function showPrivateKey() {
+    const userInputKeystoreFile = await promptText(
+        'Enter the full path for the keystore file (e.g., /path/to/keystore.json): ',
     );
+    const keystoreFile = resolveKeystorePath(userInputKeystoreFile);
+
+    if (!fs.existsSync(keystoreFile)) {
+        logger.error('Keystore file does not exist.');
+        return;
+    }
+
+    const password = await promptText('Enter the password to decrypt the keystore: ');
+    const keystore = JSON.parse(fs.readFileSync(keystoreFile, 'utf-8'));
+
+    try {
+        const secretKey = decrypt(keystore.secretKey, password);
+        logger.log(`Public Key: ${keystore.publicKey}`);
+        logger.log(`Private Key (bs58 encoded): ${secretKey}`);
+        logger.log(`WARNING: Please keep your private key secure and do not share it with anyone!`);
+    } catch (error) {
+        logger.error('Invalid password or corrupted keystore file.');
+        return;
+    }
+}
+
+async function main() {
+    const action = await promptText('Choose an action: (generate/modify/show/show-private) ', 'generate');
+
     if (action.toLowerCase() === 'generate') {
         await generateKeystore();
     } else if (action.toLowerCase() === 'modify') {
         await modifyKeystorePassword();
     } else if (action.toLowerCase() === 'show') {
         await showPublicKey();
+    } else if (action.toLowerCase() === 'show-private') {
+        await showPrivateKey();
     } else {
         logger.error('Invalid action.');
     }
