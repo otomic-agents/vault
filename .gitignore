@@ -2,3 +2,5 @@ node_modules
 dist
 *.env.sh
 keystore
+evm-keystore.json
+solana-keystore.json

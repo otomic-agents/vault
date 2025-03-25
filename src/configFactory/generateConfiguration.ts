@@ -68,6 +68,9 @@ async function main() {
     // copy config template
     copyTemplate(evmKeystoreFile, solanaKeystoreFile);
 
+    // After copying is complete, directly replace the IP in all files
+    await replaceIpInAllFiles('./signer', '172.31.17.72', ip);
+
     // rewrite config
     await rewriteConfig(evm, solana, evmKeystoreFile, solanaKeystoreFile, evmPassword, solanaPassword, port, ip);
 }
@@ -101,7 +104,7 @@ const initSignerDir = () => {
 };
 
 const copyTemplate = (evmKeystoreFile: string, solanaKeystoreFile: string) => {
-    // Define source and destination paths
+    // Define the list of files to copy
     const filesToCopy = [
         { src: './docker-compose-lp.yml', dest: './signer/docker-compose.yml' },
         { src: './front_nginx.conf', dest: './signer/front_nginx.conf' },
@@ -143,12 +146,12 @@ const rewriteConfig = async (
     ip: string,
 ) => {
     if (evm == false) {
-        console.log('remove evm config');
+        console.log('Removing EVM configuration');
         await rewriteRemoveEVMConfigDockerCompose();
     }
 
     if (solana == false) {
-        console.log('remove solana config');
+        console.log('Removing Solana configuration');
         await rewriteRemoveSolanaConfigDockerCompose();
     }
 
@@ -163,8 +166,12 @@ const rewriteConfig = async (
     }
 
     await rewriteSignerListenPort(port);
-
+    
+    // Execute IP replacement at the end
     await rewriteWhiteLists(ip);
+    
+    // Add verification step to ensure successful replacement
+    await verifyIPReplacement(ip);
 };
 
 const rewriteRemoveEVMConfigDockerCompose = () =>
@@ -413,53 +420,86 @@ const rewriteSignerListenPort = (port: string) =>
 
 const rewriteWhiteLists = (ip: string) =>
     new Promise<void>((resolve, reject) => {
-        // Define the path to the docker-compose file
         const filePath = './signer/docker-compose.yml';
 
-        // Reading the YAML file
         fs.readFile(filePath, 'utf8', (err, data) => {
             if (err) {
                 console.error(`Error reading file: ${err}`);
+                reject(err);
                 return;
             }
 
-            // Parse the YAML file
-            let doc;
-            try {
-                doc = yaml.load(data);
-            } catch (e) {
-                console.error(`Error parsing YAML: ${e}`);
-                return;
-            }
+            // Directly replace all instances of IP address in the text
+            const modifiedData = data.replace(/172\.31\.17\.72/g, ip);
 
-            // Modify the IP address in the document
-            // Assuming the IP address is in a specific field, you need to adjust this according to your YAML structure
-            const replaceIpInDoc = (obj: any) => {
-                for (const key in obj) {
-                    if (typeof obj[key] === 'string') {
-                        obj[key] = obj[key].replace(/172\.31\.17\.72/g, ip);
-                    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-                        replaceIpInDoc(obj[key]);
-                    }
-                }
-            };
-
-            replaceIpInDoc(doc);
-
-            // Convert the modified object back to YAML format
-            const modifiedData = yaml.dump(doc);
-
-            // Write the modified data back to the file
             fs.writeFile(filePath, modifiedData, 'utf8', (err) => {
                 if (err) {
                     console.error(`Error writing file: ${err}`);
+                    reject(err);
                     return;
                 }
                 console.log(`File ${filePath} has been updated successfully.`);
-                setTimeout(resolve, 1000);
+                resolve();
             });
         });
     });
+
+// New verification function
+const verifyIPReplacement = (ip: string) =>
+    new Promise<void>((resolve, reject) => {
+        const filePath = './signer/docker-compose.yml';
+        
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                console.error(`Error reading file: ${err}`);
+                reject(err);
+                return;
+            }
+            
+            if (data.includes('172.31.17.72')) {
+                console.warn('Warning: Original IP address still exists in the file! Performing additional direct replacement...');
+                const modifiedData = data.replace(/172\.31\.17\.72/g, ip);
+                
+                fs.writeFile(filePath, modifiedData, 'utf8', (err) => {
+                    if (err) {
+                        console.error(`Error writing file: ${err}`);
+                        reject(err);
+                        return;
+                    }
+                    console.log(`File ${filePath} has been updated through additional verification step.`);
+                    resolve();
+                });
+            } else {
+                console.log('IP replacement verification successful.');
+                resolve();
+            }
+        });
+    });
+
+// New function: Replace IP in all files in the directory
+const replaceIpInAllFiles = async (dirPath: string, oldIp: string, newIp: string) => {
+    const files = fs.readdirSync(dirPath);
+    
+    for (const file of files) {
+        const filePath = `${dirPath}/${file}`;
+        const stats = fs.statSync(filePath);
+        
+        if (stats.isDirectory()) {
+            // Process subdirectories recursively
+            if (file !== 'keys') { // Skip keys directory
+                await replaceIpInAllFiles(filePath, oldIp, newIp);
+            }
+        } else if (stats.isFile()) {
+            // Read and replace file content
+            const content = fs.readFileSync(filePath, 'utf8');
+            if (content.includes(oldIp)) {
+                const newContent = content.replace(new RegExp(oldIp, 'g'), newIp);
+                fs.writeFileSync(filePath, newContent);
+                console.log(`IP address has been replaced in file ${filePath}`);
+            }
+        }
+    }
+};
 
 main().catch((error) => {
     logger.error(`Error: ${JSON.stringify(error, null, 2)}`);
