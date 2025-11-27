@@ -15,34 +15,55 @@ export default class Server {
     private port: number;
     private server: http.Server;
     private wallet: Wallet | HDNodeWallet | undefined = undefined;
+    private wallets: Wallet[] | HDNodeWallet[] | [];
     private whitelist: Whitelist;
 
     constructor() {
         this.port = config.port;
         this.server = http.createServer(this.requestListener.bind(this));
         this.whitelist = new Whitelist();
+        this.wallets = [];
     }
 
-    private async loadPrivateKey() {
-        if (!fs.existsSync(keystoreFile)) {
-            logger.log(keystoreFile);
-            throw new Error(`Keystore file does not exist.${keystoreFile}`);
+    private async loadWalletsFromEnv() {
+        if (config.evmPrivateKeys.length === 0) {
+            logger.log('No EVM private keys found in environment');
+            return;
         }
 
-        const keystore = fs.readFileSync(keystoreFile, 'utf-8');
-        logger.log(`Loaded keystore from ${keystoreFile}`);
-        const wallet = await Wallet.fromEncryptedJson(keystore, config.vaultPassword);
-        this.wallet = wallet;
-        logger.log(`Loaded wallet with address: ${this.wallet.address}`);
+        this.wallets = config.evmPrivateKeys.map(keyData => {
+            if (!keyData) return null;
+            try {
+                const wallet = new Wallet(keyData.privateKey);
+                logger.log(`Loaded wallet from env: ${wallet.address}`);
+                return wallet;
+            } catch (error) {
+                logger.error(`Failed to create wallet from private key: ${error}`);
+                return null;
+            }
+        }).filter(wallet => wallet !== null);
+
+        logger.log(`Loaded ${this.wallets.length} wallets from environment`);
+    }
+
+    private getWalletByAddress(address?: string): Wallet | HDNodeWallet | undefined {
+        if (this.wallets.length === 0) return undefined;
+
+        if (!address) {
+            return this.wallets[0];
+        }
+
+        return this.wallets.find(wallet => wallet.address.toLowerCase() === address.toLowerCase());
     }
 
     private async signTransaction(
         serializedTx: string,
         normalizedIp: string,
     ): Promise<{ signedTx: string; publicKey: string }> {
-        await this.loadPrivateKey();
+        // Get wallet from environment
+        this.wallet = this.getWalletByAddress();
         if (!this.wallet) {
-            throw new Error('Wallet is not loaded');
+            throw new Error('No wallet available for signing');
         }
 
         let tx = Transaction.from(serializedTx);
@@ -76,10 +97,13 @@ export default class Server {
         data: EIP712Data,
         normalizedIp: string,
     ): Promise<{ signedData: string; publicKey: string }> {
-        await this.loadPrivateKey();
+        // Get wallet from environment
+        this.wallet = this.getWalletByAddress();
         if (!this.wallet) {
-            throw new Error('Wallet is not loaded');
+            throw new Error('No wallet available for signing');
         }
+
+        console.log(`[EVM] Signing EIP-712 message from IP: ${normalizedIp}`);
 
         let isValid = this.whitelist.isAllowedMsg(normalizedIp, data);
         if (!isValid) {
@@ -197,7 +221,8 @@ export default class Server {
     }
 
     public async start(): Promise<void> {
-        await this.loadPrivateKey();
+        // await this.loadPrivateKey();
+        await this.loadWalletsFromEnv();
         this.server.listen(this.port, this.hostname, () => {
             logger.log(`Server running at http://${this.hostname}:${this.port}`);
             // reset wallet after server is started, then load it again when sign request comes

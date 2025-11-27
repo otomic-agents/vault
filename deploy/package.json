@@ -1,0 +1,40 @@
+{
+  "dependencies": {
+    "@beclab/olaresid": "^0.1.2",
+    "@solana/web3.js": "^1.98.4",
+    "@trustwallet/wallet-core": "^4.4.2",
+    "await-to-js": "^3.0.0",
+    "bs58": "^6.0.0",
+    "ethers": "^6.15.0",
+    "lodash": "^4.17.21",
+    "npx": "^10.2.2",
+    "toml": "^3.0.0",
+    "web3": "^4.16.0"
+  },
+  "name": "vault-deploy",
+  "version": "1.0.0",
+  "description": "One-click deployment tool for Vault signing service",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/otomic-agents/vault-deploy.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/otomic-agents/vault-deploy/issues"
+  },
+  "homepage": "https://github.com/otomic-agents/vault-deploy#readme",
+  "devDependencies": {
+    "@types/bs58": "^4.0.4",
+    "@types/node": "^24.10.1",
+    "@types/web3": "^1.0.20",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
