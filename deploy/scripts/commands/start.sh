@@ -12,6 +12,13 @@ cmd_start() {
 
     log_info "Starting vault services..."
 
+    # Check owner configuration before generating keys
+    log_info "Checking owner configuration..."
+    if ! source "${SCRIPT_DIR}/scripts/commands/check-config.sh" || ! check_owner_requirements; then
+        log_error "Owner configuration check failed, please fix keys.toml first"
+        return 1
+    fi
+
     # Generate missing keys first
     log_info "Checking and generating missing keys..."
     if ! npx ts-node lib/keys/generate-keys.ts; then
