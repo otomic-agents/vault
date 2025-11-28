@@ -79,7 +79,7 @@ class AddressManager {
         const keypair = Keypair.fromSecretKey(secretKeyUint8);
         return keypair.publicKey.toBase58();
       } else {
-        // 使用 WalletUtils 进行 EVM 地址派生
+        // Use WalletUtils for EVM address derivation
         return this.walletUtils.deriveAddressFromPrivateKey(privateKey);
       }
     } catch (error) {
@@ -89,9 +89,9 @@ class AddressManager {
   }
 
   /**
-   * 从 owner mnemonic 获取地址
-   * @param mnemonic - 助记词
-   * @returns 地址
+   * Get address from owner mnemonic
+   * @param mnemonic - The mnemonic phrase
+   * @returns The derived address
    */
   async getOwnerAddressFromMnemonic(mnemonic: string): Promise<string> {
     try {
@@ -138,7 +138,7 @@ class AddressManager {
   }
 
   async registerAddress(ownerMnemonic: string, registerPrivateKey: string, chainName: string, domain: string): Promise<boolean> {
-    const env = { ...process.env, NODE_NO_WARNINGS: '1' };
+    const env: { [key: string]: string | undefined } = { ...process.env, NODE_NO_WARNINGS: '1' };
 
     if (chainName === 'solana') {
       env.SOLANA_PRIVATE_KEY = registerPrivateKey;
