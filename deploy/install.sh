@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Vault Deploy installation script
-# Download specified version of vault-deploy repository from GitHub source code
+# Download specified version of vault repository from GitHub source code
 
 set -e
 
@@ -18,11 +18,11 @@ fi
 VERSION_CLEAN=${VERSION#v}
 
 # GitHub source code download URL
-REPO="otomic-agents/vault-deploy"
+REPO="otomic-agents/vault"
 DOWNLOAD_URL="https://github.com/${REPO}/archive/refs/tags/${VERSION}.tar.gz"
-ARCHIVE_FILE="vault-deploy-${VERSION}.tar.gz"
+ARCHIVE_FILE="vault-${VERSION}.tar.gz"
 
-echo "Downloading vault-deploy ${VERSION}..."
+echo "Downloading vault ${VERSION}..."
 echo "Download URL: ${DOWNLOAD_URL}"
 
 # Download file to current directory
@@ -54,8 +54,8 @@ rm -f "${ARCHIVE_FILE}"
 
 echo ""
 echo "Installation completed!"
-echo "Files extracted to: vault-deploy-${VERSION_CLEAN}/"
+echo "Files extracted to: vault-${VERSION_CLEAN}/"
 echo ""
 echo "Next steps:"
-echo "  cd vault-deploy-${VERSION_CLEAN}"
+echo "  cd vault-${VERSION_CLEAN}/deploy"
 echo "  ./panel.sh generate-config"
