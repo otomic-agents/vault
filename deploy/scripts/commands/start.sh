@@ -32,6 +32,10 @@ cmd_start() {
         return 1
     fi
 
+    # Display all account private keys (masked) and addresses
+    log_info "=== Account Information ==="
+    NODE_NO_WARNINGS=1 npx ts-node lib/auth-address/get-addresses.ts
+
     # Check lp_node_ip
     local lp_ip=$(get_toml_value "config.toml" "security" "lp_node_ip")
     if [ -z "$lp_ip" ] || [ "$lp_ip" = "" ]; then
