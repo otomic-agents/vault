@@ -8,7 +8,7 @@ cmd_stop() {
         return 0
     fi
 
-    docker-compose down || {
+    sudo -E docker-compose down || {
         log_error "Failed to stop services"
         return 1
     }

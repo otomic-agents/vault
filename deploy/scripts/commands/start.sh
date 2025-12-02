@@ -69,7 +69,7 @@ cmd_start() {
 
     # Start services
     log_info "Starting EVM vault and Solana vault services..."
-    docker-compose up -d || {
+    sudo -E docker-compose up -d || {
         log_error "Failed to start services"
         return 1
     }
