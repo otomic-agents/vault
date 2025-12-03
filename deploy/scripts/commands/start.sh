@@ -19,6 +19,9 @@ cmd_start() {
         return 1
     fi
 
+    # Ensure asdf is loaded before using npx (even though check_dependencies should have loaded it)
+    ensure_asdf_loaded
+
     # Generate missing keys first
     log_info "Checking and generating missing keys..."
     if ! npx ts-node lib/keys/generate-keys.ts; then

@@ -2,6 +2,9 @@
 
 # PublishAddress command: publish addresses
 cmd_publish_address() {
+    # Ensure asdf is loaded before using npx
+    ensure_asdf_loaded
+    
     log_info "Publishing addresses..."
 
     if ! check_keys_file; then

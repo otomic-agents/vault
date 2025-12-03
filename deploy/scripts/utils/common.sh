@@ -34,6 +34,23 @@ check_command() {
     return 0
 }
 
+# Ensure asdf environment is loaded
+ensure_asdf_loaded() {
+    # Check if asdf is already loaded by checking if asdf command exists
+    if ! command -v asdf &> /dev/null; then
+        # Try to load asdf if it exists
+        if [ -f "$HOME/.asdf/asdf.sh" ]; then
+            . "$HOME/.asdf/asdf.sh"
+        else
+            # If asdf is not installed, try to source from dev-tools
+            if [ -f "${SCRIPT_DIR}/scripts/utils/dev-tools.sh" ]; then
+                source "${SCRIPT_DIR}/scripts/utils/dev-tools.sh"
+                load_asdf
+            fi
+        fi
+    fi
+}
+
 # Parse value from TOML file
 get_toml_value() {
     local file=$1
@@ -78,6 +95,9 @@ check_docker_compose_file() {
 
 # Check if did-cli is available
 check_olares_cli() {
+    # Ensure asdf is loaded before using npx
+    ensure_asdf_loaded
+    
     if ! NODE_NO_WARNINGS=1 npx did-cli --version &> /dev/null; then
         log_error "did-cli is not available, please ensure @olares/did-cli is installed"
         return 1
@@ -143,6 +163,9 @@ run_npm_install() {
 
 # Generate and export key environment variables
 generate_and_export_keys() {
+    # Ensure asdf is loaded before using npx
+    ensure_asdf_loaded
+    
     log_info "Generating key environment variables..."
 
     # Check if keys.toml exists

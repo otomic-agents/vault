@@ -2,6 +2,9 @@
 
 # ListAddress command: List published addresses
 cmd_list_address() {
+    # Ensure asdf is loaded before using npx
+    ensure_asdf_loaded
+    
     local network="mainnet"  # Default to mainnet
 
     # Parse optional network argument
