@@ -2,7 +2,7 @@
 
 ## 1. Download vault source code for the specific version
 ```bash
-curl -sSL https://github.com/otmoic/vault/releases/latest/download/install.sh | bash -s v1.2.3
+curl -sSL https://github.com/otomic-agents/vault/releases/download/v0.1.4/install.sh | bash -s v0.1.4
 ```
 
 ## 2. Generate configuration template
