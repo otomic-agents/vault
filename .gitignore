@@ -4,3 +4,13 @@ dist
 keystore
 evm-keystore.json
 solana-keystore.json
+.claude
+CLAUDE.md
+.vscode
+deploy/.env
+
+# Sensitive configuration files - DO NOT COMMIT
+deploy/keys.toml
+deploy/config.toml
+keys.toml
+config.toml

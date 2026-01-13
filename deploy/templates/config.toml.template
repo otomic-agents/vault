@@ -1,0 +1,31 @@
+# IP whitelist
+[security]
+# Liquidity provider node IP address for access control and security verification
+# This IP will be allowed to access the vault service
+lp_node_ip = "172.18.0.1"
+
+# Server configuration
+[server]
+# Vault service port
+port = 19000
+
+# RPC settings (Optional - defaults provided)
+[rpc]
+# PublicNode's Optimism mainnet RPC endpoint, fast, free and privacy-first
+optimism = "https://optimism-rpc.publicnode.com/"
+
+# PublicNode's Ethereum mainnet RPC endpoint, high-performance Web3 connection
+eth = "https://ethereum-rpc.publicnode.com/"
+
+# PublicNode's Solana mainnet RPC endpoint, reliable Solana network access
+solana = "https://solana-rpc.publicnode.com/"
+
+# PublicNode's BSC mainnet RPC endpoint, connect to Binance Smart Chain network
+bsc = "https://bsc-rpc.publicnode.com/"
+
+# PublicNode's Polygon mainnet RPC endpoint
+polygon = "https://polygon-rpc.publicnode.com/"
+
+# PublicNode's Arbitrum mainnet RPC endpoint
+arbitrum = "https://arbitrum-rpc.publicnode.com/"
+

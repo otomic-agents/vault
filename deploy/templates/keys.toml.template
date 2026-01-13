@@ -1,0 +1,24 @@
+# DID owner key
+# https://docs.otmoic.com/guide/lp/wallet/how-to-get-olares-did-owner-private-key.html
+[owner]
+# Your Olares ID (e.g., magicdog@olares.com)
+olares_id = ""
+# Owner mnemonic (12 words phrase for DID derivation)
+mnemonic = ""
+
+# Optimism wallets (support multiple wallets per chain)
+[optimism]
+private_key_1 = "0x"
+
+# Ethereum wallets
+[eth]
+private_key_1 = "0x"
+
+# Solana wallets
+[solana]
+private_key_1 = ""
+
+# BSC wallets
+[bsc]
+private_key_1 = "0x"
+

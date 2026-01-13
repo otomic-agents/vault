@@ -5,6 +5,23 @@ export const config = {
     vaultName: process.env.VAULT_NAME || 'test-evm',
     vaultPassword: process.env.VAULT_PASSWORD || 'password',
 
+    evmPrivateKeys: (() => {
+        const privateKeyMap = process.env.PRIVATE_KEY_MAP || '';
+        if (!privateKeyMap) return [];
+
+        return privateKeyMap.split(',').map(item => {
+            const [key, privateKey] = item.split('=');
+            if (!key || !privateKey) return null;
+
+            const [network, address] = key.split('-');
+            return {
+                network: network || '',
+                address: address || '',
+                privateKey: privateKey || ''
+            };
+        }).filter(item => item !== null && item.network !== 'solana');
+    })(),
+
     signTxWhitelists: process.env.SIGN_TX_WHITELISTS
         ? process.env.SIGN_TX_WHITELISTS.split(',')
         : [

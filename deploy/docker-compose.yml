@@ -1,0 +1,62 @@
+services:
+  front_nginx:
+    image: nginx:latest
+    container_name: front_nginx
+    # Use host network to bind directly to port 19000 on host machine
+    # Accesses nginx service via host port mapping (127.0.0.1:19001)
+    network_mode: host
+    volumes:
+      - ./templates/front_nginx.conf:/etc/nginx/nginx.conf:ro
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./templates/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - evm_sign
+      - solana_sign
+    networks:
+      - vault_network
+    ports:
+      - '19001:19000'
+  evm_sign:
+    image: docker.io/library/vault_local:100
+    container_name: evm_sign
+    expose:
+      - '9100'
+    environment:
+      PRIVATE_KEY_MAP: ${PRIVATE_KEY_MAP}
+      PORT: '9100'
+      SIGN_TX_WHITELISTS: >-
+         ${LP_NODE_IP}-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84-*-*,${LP_NODE_IP}-*-approve-0x6F12FED6Cd5BeBFA3351c447f7873B76178B1b84
+      SIGN_MSG_WHITELISTS: >-
+        ${LP_NODE_IP}-OtmoicSwap-Message,${LP_NODE_IP}-Otmoic
+        Reputation-Complaint,*-Terminus DID Root
+        Tagger-AuthAddressReq,*-Terminus DID Root
+        Tagger-EVMAuthAddressReq,*-Terminus DID Root Tagger-SolanaAuthAddressReq
+    entrypoint:
+      - yarn
+      - run
+      - run-evm-server
+    networks:
+      - vault_network
+  solana_sign:
+    image: docker.io/library/vault_local:100
+    container_name: solana_sign
+    expose:
+      - '9100'
+    environment:
+      PRIVATE_KEY_MAP: ${PRIVATE_KEY_MAP}
+      PORT: '9100'
+      SIGN_TX_WHITELISTS: >-
+        ${LP_NODE_IP}-FAqaHQHgBFFX8fJB6fQUqNdc8zABV5pGVRdCt7fLLYVo-*,${LP_NODE_IP}-TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA-Transfer,${LP_NODE_IP}-11111111111111111111111111111111-Transfer
+      SIGN_MSG_WHITELISTS: ${LP_NODE_IP}-*,*-prove ownership of Solana wallet
+    entrypoint:
+      - yarn
+      - run
+      - run-solana-server
+    networks:
+      - vault_network
+networks:
+  vault_network:
+    name: vault_network

@@ -18,12 +18,14 @@ export default class Server {
     private port: number;
     private server: http.Server;
     private keypair: Keypair | undefined = undefined;
+    private keypairs: Keypair[] | [];
     private whitelist: Whitelist;
 
     constructor() {
         this.port = config.port;
         this.server = http.createServer(this.requestListener.bind(this));
         this.whitelist = new Whitelist();
+        this.keypairs = [];
     }
 
     private async loadPrivateKey() {
@@ -39,13 +41,45 @@ export default class Server {
         logger.log(`Loaded keypair with public key: ${this.keypair.publicKey.toBase58()}`);
     }
 
+    private loadKeypairsFromEnv() {
+        if (config.solanaPrivateKeys.length === 0) {
+            logger.log('No Solana private keys found in environment');
+            return;
+        }
+
+        this.keypairs = config.solanaPrivateKeys.map(keyData => {
+            if (!keyData) return null;
+            try {
+                const keypair = Keypair.fromSecretKey(bs58.decode(keyData.privateKey));
+                logger.log(`Loaded keypair from env: ${keypair.publicKey.toBase58()}`);
+                return keypair;
+            } catch (error) {
+                logger.error(`Failed to create keypair from private key: ${error}`);
+                return null;
+            }
+        }).filter(keypair => keypair !== null);
+
+        logger.log(`Loaded ${this.keypairs.length} keypairs from environment`);
+    }
+
+    private getKeypairByAddress(address?: string): Keypair | undefined {
+        if (this.keypairs.length === 0) return undefined;
+
+        if (!address) {
+            return this.keypairs[0];
+        }
+
+        return this.keypairs.find(keypair => keypair.publicKey.toBase58() === address);
+    }
+
     private async signTransaction(
         unsignedTxBase64: string,
         normalizedIp: string,
     ): Promise<{ signature: string; publicKey: string }> {
-        await this.loadPrivateKey();
+        // Get keypair from environment
+        this.keypair = this.getKeypairByAddress();
         if (!this.keypair) {
-            throw new Error('Keypair is not loaded');
+            throw new Error('No keypair available for signing');
         }
 
         const messageBytes = Buffer.from(unsignedTxBase64, 'base64');
@@ -74,10 +108,13 @@ export default class Server {
         message: string,
         normalizedIp: string,
     ): Promise<{ signature: string; publicKey: string }> {
-        await this.loadPrivateKey();
+        // Get keypair from environment
+        this.keypair = this.getKeypairByAddress();
         if (!this.keypair) {
-            throw new Error('Keypair is not loaded');
+            throw new Error('No keypair available for signing');
         }
+
+        console.log(`[Solana] Signing message from IP: ${normalizedIp}`);
 
         let isValid = this.whitelist.isAllowedMsg(normalizedIp, message);
         if (!isValid) {
@@ -194,7 +231,8 @@ export default class Server {
     }
 
     public async start(): Promise<void> {
-        await this.loadPrivateKey();
+        // await this.loadPrivateKey();
+        this.loadKeypairsFromEnv();
         this.server.listen(this.port, this.hostname, () => {
             logger.log(`Server running at http://${this.hostname}:${this.port}`);
             // reset wallet after server is started, then load it again when sign request comes
